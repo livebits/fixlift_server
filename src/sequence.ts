@@ -20,7 +20,7 @@ import {
   PermissionKey,
 } from './authorization';
 import { User } from './models';
-import {authenticate, STRATEGY} from 'loopback4-authentication';
+import { authenticate, STRATEGY } from 'loopback4-authentication';
 
 const SequenceActions = RestBindings.SequenceActions;
 
@@ -32,7 +32,7 @@ export class MySequence implements SequenceHandler {
     @inject(SequenceActions.SEND) public send: Send,
     @inject(SequenceActions.REJECT) public reject: Reject,
     @inject(AuthenticationBindings.AUTH_ACTION)
-    protected authenticateRequest: AuthenticateFn<User>,
+    protected authenticateRequest: AuthenticateFn,
     @inject(AuthorizatonBindings.USER_PERMISSIONS)
     protected fetchUserPermissons: UserPermissionsFn,
     @inject(AuthorizatonBindings.AUTHORIZE_ACTION)
