@@ -5,6 +5,7 @@ import {
   UserProfile,
   authenticate,
 } from '@loopback/authentication';
+import { authorize, PermissionKey } from '../authorization';
 
 /**
  * OpenAPI response for ping()
@@ -38,25 +39,25 @@ const PING_RESPONSE: ResponseObject = {
 export class PingController {
   constructor(
     @inject(RestBindings.Http.REQUEST) private req: Request,
-    @inject(AuthenticationBindings.CURRENT_USER) private user: UserProfile
+    // @inject(AuthenticationBindings.CURRENT_USER) private user: UserProfile
   ) { }
 
   // Map to `GET /ping`
-  @authenticate('BasicStrategy')
+  // @authorize([PermissionKey.ViewRoles])
+  // @authenticate('jwt')
   @get('/ping', {
     responses: {
       '200': PING_RESPONSE,
     },
   })
-  ping(): string {
+  ping(): object {
     // Reply with a greeting, the current time, the url, and request headers
-    return 'yes';
-    // return {
-    //   greeting: 'Hello from LoopBack',
-    //   date: new Date(),
-    //   url: this.req.url,
-    //   headers: Object.assign({}, this.req.headers),
-    // };
+    return {
+      greeting: 'Hello from LoopBack',
+      date: new Date(),
+      url: this.req.url,
+      headers: Object.assign({}, this.req.headers),
+    };
   }
 
   @get('/', {

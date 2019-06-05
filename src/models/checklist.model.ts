@@ -2,7 +2,32 @@ import { Entity, model, property } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 
 @model({ name: 'checklists' })
-export class Checklist extends BaseEntity {
+export class Checklist extends Entity {
+
+  @property({
+    type: 'number',
+    id: true,
+    generated: true
+  })
+  id?: number;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'created_on',
+    },
+  })
+  createdOn?: Date;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'modified_on',
+    },
+  })
+  modifiedOn?: Date;
 
   @property({
     type: 'string',
@@ -16,13 +41,17 @@ export class Checklist extends BaseEntity {
 
   @property({
     type: 'number',
-    name: 'checklist_category_id'
+    mysql: {
+      columnName: 'checklist_category_id',
+    },
   })
   checklistCategoryId?: number;
 
   @property({
     type: 'number',
-    name: 'company_id'
+    mysql: {
+      columnName: 'company_id',
+    },
   })
   companyId?: number;
 

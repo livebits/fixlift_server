@@ -2,7 +2,32 @@ import { Entity, model, property } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 
 @model({ name: 'deal_placeholders' })
-export class DealPlaceholder extends BaseEntity {
+export class DealPlaceholder extends Entity {
+
+  @property({
+    type: 'number',
+    id: true,
+    generated: true
+  })
+  id?: number;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'created_on',
+    },
+  })
+  createdOn?: Date;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'modified_on',
+    },
+  })
+  modifiedOn?: Date;
 
   @property({
     type: 'string',
@@ -16,7 +41,9 @@ export class DealPlaceholder extends BaseEntity {
 
   @property({
     type: 'string',
-    name: 'property_name'
+    mysql: {
+      columnName: 'property_name',
+    },
   })
   propertyName?: string;
 
@@ -27,7 +54,9 @@ export class DealPlaceholder extends BaseEntity {
 
   @property({
     type: 'number',
-    name: 'company_id'
+    mysql: {
+      columnName: 'company_id',
+    },
   })
   companyId?: number;
 

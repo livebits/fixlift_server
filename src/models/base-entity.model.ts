@@ -1,4 +1,5 @@
 import { property, Entity } from '@loopback/repository';
+import { AnyObject } from 'loopback-datasource-juggler';
 
 export class BaseEntity extends Entity {
 
@@ -12,14 +13,18 @@ export class BaseEntity extends Entity {
   @property({
     type: 'date',
     default: () => new Date(),
-    name: 'created_on',
+    mysql: {
+      columnName: 'created_on',
+    },
   })
   createdOn?: Date;
 
   @property({
     type: 'date',
     default: () => new Date(),
-    name: 'modified_on',
+    mysql: {
+      columnName: 'modified_on',
+    },
   })
   modifiedOn?: Date;
 }

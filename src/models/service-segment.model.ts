@@ -2,17 +2,46 @@ import { Entity, model, property } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 
 @model({ name: 'service_segments' })
-export class ServiceSegment extends BaseEntity {
+export class ServiceSegment extends Entity {
 
   @property({
     type: 'number',
-    name: 'service_id'
+    id: true,
+    generated: true
+  })
+  id?: number;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'created_on',
+    },
+  })
+  createdOn?: Date;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'modified_on',
+    },
+  })
+  modifiedOn?: Date;
+
+  @property({
+    type: 'number',
+    mysql: {
+      columnName: 'service_id',
+    },
   })
   serviceId?: number;
 
   @property({
     type: 'number',
-    name: 'segment_id'
+    mysql: {
+      columnName: 'segment_id',
+    },
   })
   segmentId?: number;
 
@@ -23,7 +52,9 @@ export class ServiceSegment extends BaseEntity {
 
   @property({
     type: 'number',
-    name: 'single_cost'
+    mysql: {
+      columnName: 'single_cost',
+    },
   })
   singleCost?: number;
 

@@ -1,17 +1,23 @@
-import { Model, model, property } from '@loopback/repository';
-import { BaseEntity } from './base-entity.model';
+import { Model, model, Entity, property } from '@loopback/repository';
 
 @model({ name: 'service_user_messages' })
-export class ServiceUserMessage extends BaseEntity {
+export class ServiceUserMessage extends Entity {
+
   @property({
     type: 'number',
-    name: 'service_user_id'
+    id: true,
+    mysql: {
+      columnName: 'service_user_id',
+    },
   })
   serviceUserId?: number;
 
   @property({
     type: 'number',
-    name: 'message_id'
+    id: true,
+    mysql: {
+      columnName: 'message_id',
+    },
   })
   messageId?: number;
 

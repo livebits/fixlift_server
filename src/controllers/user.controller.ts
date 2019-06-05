@@ -3,9 +3,9 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import { repository } from '@loopback/repository';
+import { repository, Filter } from '@loopback/repository';
 import { validateCredentials } from '../services/validator';
-import { post, param, get, requestBody } from '@loopback/rest';
+import { post, param, get, requestBody, getFilterSchemaFor } from '@loopback/rest';
 import { User } from '../models';
 import { inject } from '@loopback/core';
 import {
@@ -32,7 +32,7 @@ import { authorize } from '../authorization';
 
 export class UserController {
   constructor(
-    // @repository(UserRepository) public userRepository: UserRepository,
+    @repository(UserRepository) public userRepository: UserRepository,
     @inject(PasswordHasherBindings.PASSWORD_HASHER)
     public passwordHasher: PasswordHasher,
     @inject(TokenServiceBindings.TOKEN_SERVICE)
@@ -41,40 +41,40 @@ export class UserController {
     public userService: UserService<User, Credentials>,
   ) { }
 
-  // @post('/users')
-  // async create(@requestBody() user: User): Promise<User> {
-  //   // ensure a valid email value and password value
-  //   validateCredentials(_.pick(user, ['email', 'password']));
+  @post('/users')
+  async create(@requestBody() user: User): Promise<User> {
+    // ensure a valid email value and password value
+    // validateCredentials(_.pick(user, ['email', 'password']));
 
-  //   // encrypt the password
-  //   user.password = await this.passwordHasher.hashPassword(user.password);
+    // encrypt the password
+    user.password = await this.passwordHasher.hashPassword(user.password);
 
-  //   // create the new user
-  //   const savedUser = await this.userRepository.create(user);
-  //   delete savedUser.password;
+    // create the new user
+    const savedUser = await this.userRepository.create(user);
+    delete savedUser.password;
 
-  //   return savedUser;
-  // }
+    return savedUser;
+  }
 
-  // @get('/users/{userId}', {
-  //   responses: {
-  //     '200': {
-  //       description: 'User',
-  //       content: {
-  //         'application/json': {
-  //           schema: {
-  //             'x-ts-type': User,
-  //           },
-  //         },
-  //       },
-  //     },
-  //   },
-  // })
-  // async findById(@param.path.string('userId') userId: string): Promise<User> {
-  //   return this.userRepository.findById(userId, {
-  //     fields: { password: false },
-  //   });
-  // }
+  @get('/users/{userId}', {
+    responses: {
+      '200': {
+        description: 'User',
+        content: {
+          'application/json': {
+            schema: {
+              'x-ts-type': User,
+            },
+          },
+        },
+      },
+    },
+  })
+  async findById(@param.path.string('userId') userId: string): Promise<User> {
+    return this.userRepository.findById(Number(userId), {
+      fields: { password: false },
+    });
+  }
 
   @get('/users/me', {
     responses: {
@@ -120,6 +120,7 @@ export class UserController {
   //   return this.recommender.getProductRecommendations(userId);
   // }
 
+  @authorize(['*'])
   @post('/users/login', {
     responses: {
       '200': {
@@ -153,4 +154,26 @@ export class UserController {
 
     return { token };
   }
+
+  @get('/users', {
+    responses: {
+      '200': {
+        description: 'Array of User model instances',
+        content: {
+          'application/json': {
+            schema: { type: 'array', items: { 'x-ts-type': User } },
+          },
+        },
+      },
+    },
+  })
+  async find(
+    @param.query.object('filter', getFilterSchemaFor(User)) filter?: Filter<User>,
+  ): Promise<User[]> {
+    // const data = await this.userRepository.execute('select * from users left join companies cc on cc.user_id = users.id', []);
+    // console.log(data);
+
+    return await this.userRepository.find(filter);
+  }
+
 }

@@ -4,15 +4,22 @@ import { Entity, model, property } from '@loopback/repository';
   name: 'user_roles'
 })
 export class UserRole extends Entity {
+
   @property({
     type: 'number',
-    name: 'user_id'
+    mysql: {
+      columnName: 'user_id',
+    },
+    id: true
   })
   userId?: number;
 
   @property({
     type: 'number',
-    name: 'role_id'
+    mysql: {
+      columnName: 'role_id',
+    },
+    id: true
   })
   roleId?: number;
 

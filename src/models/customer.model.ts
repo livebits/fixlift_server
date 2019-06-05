@@ -2,7 +2,32 @@ import { Entity, model, property } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 
 @model({ name: 'customers' })
-export class Customer extends BaseEntity {
+export class Customer extends Entity {
+
+  @property({
+    type: 'number',
+    id: true,
+    generated: true
+  })
+  id?: number;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'created_on',
+    },
+  })
+  createdOn?: Date;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'modified_on',
+    },
+  })
+  modifiedOn?: Date;
 
   @property({
     type: 'string',
@@ -12,13 +37,17 @@ export class Customer extends BaseEntity {
 
   @property({
     type: 'boolean',
-    name: 'can_use_app'
+    mysql: {
+      columnName: 'can_use_app',
+    },
   })
   canUseApp?: boolean;
 
   @property({
     type: 'boolean',
-    name: 'auto_send_sms'
+    mysql: {
+      columnName: 'auto_send_sms',
+    },
   })
   autoSendSms?: boolean;
 
@@ -29,7 +58,9 @@ export class Customer extends BaseEntity {
 
   @property({
     type: 'string',
-    name: 'national_code'
+    mysql: {
+      columnName: 'national_code',
+    },
   })
   nationalCode?: string;
 
@@ -55,43 +86,57 @@ export class Customer extends BaseEntity {
 
   @property({
     type: 'string',
-    name: 'subscription_code'
+    mysql: {
+      columnName: 'subscription_code',
+    },
   })
   subscriptionCode?: string;
 
   @property({
     type: 'date',
-    name: 'birth_date'
+    mysql: {
+      columnName: 'birth_date',
+    },
   })
   birthDate?: string;
 
   @property({
     type: 'string',
-    name: 'company_name'
+    mysql: {
+      columnName: 'company_name',
+    },
   })
   companyName?: string;
 
   @property({
     type: 'string',
-    name: 'national_id'
+    mysql: {
+      columnName: 'national_id',
+    },
   })
   nationalId?: string;
 
   @property({
     type: 'string',
-    name: 'register_number'
+    mysql: {
+      columnName: 'register_number',
+    },
   })
   registerNumber?: string;
 
   @property({
     type: 'string',
-    name: 'economy_code'
+    mysql: {
+      columnName: 'economy_code',
+    },
   })
   economyCode?: string;
 
   @property({
     type: 'string',
-    name: 'postal_code'
+    mysql: {
+      columnName: 'postal_code',
+    },
   })
   postalCode?: string;
 
@@ -112,7 +157,9 @@ export class Customer extends BaseEntity {
 
   @property({
     type: 'number',
-    name: 'company_id'
+    mysql: {
+      columnName: 'company_id',
+    },
   })
   companyId?: number;
 
@@ -123,7 +170,9 @@ export class Customer extends BaseEntity {
 
   @property({
     type: 'string',
-    name: 'fcm_token'
+    mysql: {
+      columnName: 'fcm_token',
+    },
   })
   fcmToken?: string;
 

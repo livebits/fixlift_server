@@ -2,7 +2,32 @@ import { Entity, model, property } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 
 @model({ name: 'service_users' })
-export class ServiceUser extends BaseEntity {
+export class ServiceUser extends Entity {
+
+  @property({
+    type: 'number',
+    id: true,
+    generated: true
+  })
+  id?: number;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'created_on',
+    },
+  })
+  createdOn?: Date;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'modified_on',
+    },
+  })
+  modifiedOn?: Date;
 
   @property({
     type: 'string',
@@ -38,13 +63,17 @@ export class ServiceUser extends BaseEntity {
   @property({
     type: 'number',
     required: true,
-    name: 'company_id'
+    mysql: {
+      columnName: 'company_id',
+    },
   })
   companyId: number;
 
   @property({
     type: 'string',
-    name: 'fcm_token'
+    mysql: {
+      columnName: 'fcm_token',
+    },
   })
   fcmToken?: string;
 
@@ -55,7 +84,9 @@ export class ServiceUser extends BaseEntity {
 
   @property({
     type: 'boolean',
-    name: 'can_use_app'
+    mysql: {
+      columnName: 'can_use_app',
+    },
   })
   canUseApp?: boolean;
 

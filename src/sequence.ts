@@ -1,4 +1,4 @@
-import { inject } from '@loopback/context';
+import { inject, Getter } from '@loopback/context';
 import {
   FindRoute,
   InvokeMethod,
@@ -10,7 +10,7 @@ import {
   SequenceHandler,
   HttpErrors,
 } from '@loopback/rest';
-import { AuthenticationBindings, AUTHENTICATION_STRATEGY_NOT_FOUND, USER_PROFILE_NOT_FOUND, UserProfile, AuthenticateFn } from '@loopback/authentication';
+import { AuthenticationBindings, AUTHENTICATION_STRATEGY_NOT_FOUND, USER_PROFILE_NOT_FOUND, UserProfile, AuthenticateFn, UserService } from '@loopback/authentication';
 
 import {
   AuthorizatonBindings,
@@ -18,9 +18,13 @@ import {
   AuthorizeErrorKeys,
   UserPermissionsFn,
   PermissionKey,
+  AuthorizationMetadata,
 } from './authorization';
 import { User } from './models';
 import { authenticate, STRATEGY } from 'loopback4-authentication';
+import { UserServiceBindings } from './keys';
+import { Credentials, UserRepository } from './repositories';
+import { repository } from '@loopback/repository';
 
 const SequenceActions = RestBindings.SequenceActions;
 
@@ -37,6 +41,11 @@ export class MySequence implements SequenceHandler {
     protected fetchUserPermissons: UserPermissionsFn,
     @inject(AuthorizatonBindings.AUTHORIZE_ACTION)
     protected checkAuthorization: AuthorizeFn,
+    @inject.getter(AuthorizatonBindings.METADATA)
+    private readonly getMetadata: Getter<AuthorizationMetadata>,
+    @inject(UserServiceBindings.USER_SERVICE)
+    public userService: UserService<User, Credentials>,
+    @repository(UserRepository) public userRepository: UserRepository,
   ) { }
 
   async handle(context: RequestContext) {
@@ -45,19 +54,31 @@ export class MySequence implements SequenceHandler {
       const route = this.findRoute(request);
 
       // Do authentication of the user and fetch user permissions below
-      const authUser: User = await this.authenticateRequest(request);
-      // Parse and calculate user permissions based on role and user level
-      const permissions: PermissionKey[] = this.fetchUserPermissons(
-        authUser.permissions,
-        authUser.role.permissions,
-      );
-      // This is main line added to sequence
-      // where we are invoking the authorize action function to check for access
-      const isAccessAllowed: boolean = await this.checkAuthorization(
-        permissions,
-      );
-      if (!isAccessAllowed) {
-        throw new HttpErrors.Forbidden(AuthorizeErrorKeys.NotAllowedAccess);
+      const authUser = await this.authenticateRequest(request);
+
+      //get method authorize permissions
+      const metadata: AuthorizationMetadata = await this.getMetadata();
+
+      if (metadata && authUser) {
+        //get user roles and permissions
+        let user: User = await this.userRepository.findById(Number(authUser.id));
+
+        // let roles = await this.userRepository.roles(user.id).find();
+
+        // Parse and calculate user permissions based on role and user level
+        const permissions: PermissionKey[] = this.fetchUserPermissons(
+          user.permissions ? user.permissions : [],
+          [],
+        );
+
+        // This is main line added to sequence
+        // where we are invoking the authorize action function to check for access
+        const isAccessAllowed: boolean = await this.checkAuthorization(
+          permissions,
+        );
+        if (!isAccessAllowed) {
+          throw new HttpErrors.Forbidden(AuthorizeErrorKeys.NotAllowedAccess);
+        }
       }
 
       const args = await this.parseParams(request, route);

@@ -2,11 +2,38 @@ import { Entity, model, property } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 
 @model({ name: 'lift_fields' })
-export class LiftField extends BaseEntity {
+export class LiftField extends Entity {
 
   @property({
     type: 'number',
-    name: 'lift_field_category_id'
+    id: true,
+    generated: true
+  })
+  id?: number;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'created_on',
+    },
+  })
+  createdOn?: Date;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'modified_on',
+    },
+  })
+  modifiedOn?: Date;
+
+  @property({
+    type: 'number',
+    mysql: {
+      columnName: 'lift_field_category_id',
+    },
   })
   liftFieldCategoryId?: number;
 
@@ -17,7 +44,9 @@ export class LiftField extends BaseEntity {
 
   @property({
     type: 'string',
-    name: 'field_type'
+    mysql: {
+      columnName: 'field_type',
+    },
   })
   fieldType?: string;
 

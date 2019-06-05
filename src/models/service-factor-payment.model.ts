@@ -2,17 +2,23 @@ import { Entity, model, property } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 
 @model({ name: 'service_factor_payments' })
-export class ServiceFactorPayment extends BaseEntity {
+export class ServiceFactorPayment extends Entity {
 
   @property({
     type: 'number',
-    name: 'service_factor_id'
+    id: true,
+    mysql: {
+      columnName: 'service_factor_id',
+    },
   })
   serviceFactorId?: number;
 
   @property({
     type: 'number',
-    name: 'payment_id'
+    id: true,
+    mysql: {
+      columnName: 'payment_id',
+    },
   })
   paymentId?: number;
 

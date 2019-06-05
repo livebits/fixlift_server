@@ -2,17 +2,46 @@ import { Entity, model, property } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 
 @model({ name: 'damage_checklists' })
-export class DamageChecklist extends BaseEntity {
+export class DamageChecklist extends Entity {
 
   @property({
     type: 'number',
-    name: 'damage_id'
+    id: true,
+    generated: true
+  })
+  id?: number;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'created_on',
+    },
+  })
+  createdOn?: Date;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'modified_on',
+    },
+  })
+  modifiedOn?: Date;
+
+  @property({
+    type: 'number',
+    mysql: {
+      columnName: 'damage_id',
+    },
   })
   damageId?: number;
 
   @property({
     type: 'number',
-    name: 'checklist_id'
+    mysql: {
+      columnName: 'checklist_id',
+    },
   })
   checklistId?: number;
 

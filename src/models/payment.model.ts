@@ -2,7 +2,32 @@ import { Entity, model, property } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 
 @model({ name: 'payments' })
-export class Payment extends BaseEntity {
+export class Payment extends Entity {
+
+  @property({
+    type: 'number',
+    id: true,
+    generated: true
+  })
+  id?: number;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'created_on',
+    },
+  })
+  createdOn?: Date;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'modified_on',
+    },
+  })
+  modifiedOn?: Date;
 
   @property({
     type: 'number',
@@ -11,13 +36,17 @@ export class Payment extends BaseEntity {
 
   @property({
     type: 'string',
-    name: 'ref_id'
+    mysql: {
+      columnName: 'ref_id',
+    },
   })
   refId?: string;
 
   @property({
     type: 'string',
-    name: 'payment_type'
+    mysql: {
+      columnName: 'payment_type',
+    },
   })
   paymentType?: string;
 
@@ -33,7 +62,9 @@ export class Payment extends BaseEntity {
 
   @property({
     type: 'number',
-    name: 'company_id'
+    mysql: {
+      columnName: 'company_id',
+    },
   })
   companyId: number;
 

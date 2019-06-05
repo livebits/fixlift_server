@@ -5,13 +5,19 @@ export class DamageComment extends Entity {
 
   @property({
     type: 'number',
-    name: 'damage_id'
+    mysql: {
+      columnName: 'damage_id',
+    },
+    id: true
   })
   damageId?: number;
 
   @property({
     type: 'number',
-    name: 'comment_id'
+    mysql: {
+      columnName: 'comment_id',
+    },
+    id: true
   })
   commentId?: number;
 

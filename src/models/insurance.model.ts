@@ -2,17 +2,46 @@ import { Entity, model, property } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 
 @model({ name: 'insurances' })
-export class Insurance extends BaseEntity {
+export class Insurance extends Entity {
+
+  @property({
+    type: 'number',
+    id: true,
+    generated: true
+  })
+  id?: number;
 
   @property({
     type: 'date',
-    name: 'start_date'
+    default: () => new Date(),
+    mysql: {
+      columnName: 'created_on',
+    },
+  })
+  createdOn?: Date;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'modified_on',
+    },
+  })
+  modifiedOn?: Date;
+
+  @property({
+    type: 'date',
+    mysql: {
+      columnName: 'start_date',
+    },
   })
   startDate?: string;
 
   @property({
     type: 'date',
-    name: 'finish_date'
+    mysql: {
+      columnName: 'finish_date',
+    },
   })
   finishDate?: string;
 
@@ -23,19 +52,25 @@ export class Insurance extends BaseEntity {
 
   @property({
     type: 'string',
-    name: 'insurance_number'
+    mysql: {
+      columnName: 'insurance_number',
+    },
   })
   insuranceNumber?: string;
 
   @property({
     type: 'boolean',
-    name: 'all_deal_cost'
+    mysql: {
+      columnName: 'all_deal_cost',
+    },
   })
   addDealCost?: boolean;
 
   @property({
     type: 'number',
-    name: 'deal_id'
+    mysql: {
+      columnName: 'deal_id',
+    },
   })
   dealId?: number;
 

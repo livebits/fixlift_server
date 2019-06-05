@@ -2,7 +2,32 @@ import { Entity, model, property } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 
 @model({ name: 'units' })
-export class Unit extends BaseEntity {
+export class Unit extends Entity {
+
+  @property({
+    type: 'number',
+    id: true,
+    generated: true
+  })
+  id?: number;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'created_on',
+    },
+  })
+  createdOn?: Date;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'modified_on',
+    },
+  })
+  modifiedOn?: Date;
 
   @property({
     type: 'string',
@@ -17,7 +42,9 @@ export class Unit extends BaseEntity {
   @property({
     type: 'number',
     required: true,
-    name: 'company_id'
+    mysql: {
+      columnName: 'company_id',
+    },
   })
   companyId: number;
 
