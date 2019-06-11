@@ -59,3 +59,9 @@ export class ChecklistCategory extends Entity {
     super(data);
   }
 }
+
+export interface ChecklistCategoryRelations {
+
+}
+
+export type ChecklistCategoryWithRelations = ChecklistCategory & ChecklistCategoryRelations;

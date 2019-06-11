@@ -79,3 +79,9 @@ export class Lift extends Entity {
     super(data);
   }
 }
+
+export interface LiftRelations {
+
+}
+
+export type LiftWithRelations = Lift & LiftRelations;

@@ -61,3 +61,9 @@ export class Segment extends Entity {
     super(data);
   }
 }
+
+export interface SegmentRelations {
+
+}
+
+export type SegmentWithRelations = Segment & SegmentRelations;

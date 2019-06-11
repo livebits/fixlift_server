@@ -73,3 +73,9 @@ export class ServiceSegment extends Entity {
     super(data);
   }
 }
+
+export interface ServiceSegmentRelations {
+
+}
+
+export type ServiceSegmentWithRelations = ServiceSegment & ServiceSegmentRelations;

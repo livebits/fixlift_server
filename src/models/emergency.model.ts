@@ -92,3 +92,9 @@ export class Emergency extends Entity {
     super(data);
   }
 }
+
+export interface EmergencyRelations {
+
+}
+
+export type EmergencyWithRelations = Emergency & EmergencyRelations;

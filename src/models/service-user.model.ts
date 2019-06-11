@@ -1,5 +1,6 @@
-import { Entity, model, property } from '@loopback/repository';
+import { Entity, model, property, belongsTo } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
+import { Company } from './company.model';
 
 @model({ name: 'service_users' })
 export class ServiceUser extends Entity {
@@ -56,18 +57,18 @@ export class ServiceUser extends Entity {
   longitude?: string;
 
   @property({
-    type: 'geopoint',
+    type: 'string',
   })
   location?: string;
 
-  @property({
-    type: 'number',
-    required: true,
-    mysql: {
-      columnName: 'company_id',
-    },
-  })
-  companyId: number;
+  // @property({
+  //   type: 'number',
+  //   required: true,
+  //   mysql: {
+  //     columnName: 'company_id',
+  //   },
+  // })
+  // companyId: number;
 
   @property({
     type: 'string',
@@ -90,8 +91,26 @@ export class ServiceUser extends Entity {
   })
   canUseApp?: boolean;
 
+  @belongsTo(
+    () => Company,
+    { keyFrom: 'company_id', name: 'company' },
+    {
+      type: 'number',
+      name: 'company_id',
+      mysql: {
+        columnName: 'company_id',
+      },
+    },
+  )
+  companyId: number;
 
   constructor(data?: Partial<ServiceUser>) {
     super(data);
   }
 }
+
+export interface ServiceUserRelations {
+
+}
+
+export type ServiceUserWithRelations = ServiceUser & ServiceUserRelations;

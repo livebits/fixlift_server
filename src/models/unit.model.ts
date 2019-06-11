@@ -52,3 +52,9 @@ export class Unit extends Entity {
     super(data);
   }
 }
+
+export interface UnitRelations {
+
+}
+
+export type UnitWithRelations = Unit & UnitRelations;

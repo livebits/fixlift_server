@@ -1,5 +1,6 @@
-import { Entity, model, property } from '@loopback/repository';
+import { Entity, model, belongsTo, property } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
+import { Deal } from './deal.model';
 
 @model({ name: 'insurances' })
 export class Insurance extends Entity {
@@ -66,12 +67,17 @@ export class Insurance extends Entity {
   })
   addDealCost?: boolean;
 
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'deal_id',
+  @belongsTo(
+    () => Deal,
+    { keyFrom: 'deal_id', name: 'deal' },
+    {
+      type: 'number',
+      name: 'deal_id',
+      mysql: {
+        columnName: 'deal_id',
+      },
     },
-  })
+  )
   dealId?: number;
 
 
@@ -79,3 +85,9 @@ export class Insurance extends Entity {
     super(data);
   }
 }
+
+export interface InsuranceRelations {
+
+}
+
+export type InsuranceWithRelations = Insurance & InsuranceRelations;

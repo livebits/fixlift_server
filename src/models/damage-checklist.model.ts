@@ -60,3 +60,9 @@ export class DamageChecklist extends Entity {
     super(data);
   }
 }
+
+export interface DamageChecklistRelations {
+
+}
+
+export type DamageChecklistWithRelations = DamageChecklist & DamageChecklistRelations;

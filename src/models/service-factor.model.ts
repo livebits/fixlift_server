@@ -57,3 +57,9 @@ export class ServiceFactor extends Entity {
     super(data);
   }
 }
+
+export interface ServiceFactorRelations {
+
+}
+
+export type ServiceFactorWithRelations = ServiceFactor & ServiceFactorRelations;

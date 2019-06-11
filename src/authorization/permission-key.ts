@@ -20,4 +20,7 @@ export const enum PermissionKey {
   UpdateRoles = 'UpdateRoles',
   // For removing a role
   DeleteRoles = 'DeleteRoles',
+
+  // For manage roles
+  ManageRoles = 'ManageRoles',
 }

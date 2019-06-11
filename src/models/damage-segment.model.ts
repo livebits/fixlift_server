@@ -73,3 +73,9 @@ export class DamageSegment extends Entity {
     super(data);
   }
 }
+
+export interface DamageSegmentRelations {
+
+}
+
+export type DamageSegmentWithRelations = DamageSegment & DamageSegmentRelations;

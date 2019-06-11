@@ -1,6 +1,9 @@
-import { Entity, model, property, belongsTo } from '@loopback/repository';
+import { Entity, model, property, belongsTo, hasMany } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 import { User, UserWithRelations } from './user.model';
+import { Deal } from './deal.model';
+import { Customer } from './customer.model';
+import { ServiceUser } from './service-user.model';
 
 @model({
   name: 'companies',
@@ -125,6 +128,14 @@ export class Company extends Entity {
   )
   userId: number;
 
+  @hasMany(() => Deal, { keyTo: 'company_id' })
+  deals: Deal[];
+
+  @hasMany(() => Customer, { keyTo: 'company_id' })
+  customers: Customer[];
+
+  @hasMany(() => ServiceUser, { keyTo: 'company_id' })
+  serviceUsers: ServiceUser[];
 
   constructor(data?: Partial<Company>) {
     super(data);

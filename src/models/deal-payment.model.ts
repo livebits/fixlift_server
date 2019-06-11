@@ -12,24 +12,6 @@ export class DealPayment extends Entity {
   id?: number;
 
   @property({
-    type: 'date',
-    default: () => new Date(),
-    mysql: {
-      columnName: 'created_on',
-    },
-  })
-  createdOn?: Date;
-
-  @property({
-    type: 'date',
-    default: () => new Date(),
-    mysql: {
-      columnName: 'modified_on',
-    },
-  })
-  modifiedOn?: Date;
-
-  @property({
     type: 'number',
     mysql: {
       columnName: 'deal_id',
@@ -50,3 +32,9 @@ export class DealPayment extends Entity {
     super(data);
   }
 }
+
+export interface DealPaymentRelations {
+
+}
+
+export type DealPaymentWithRelations = DealPayment & DealPaymentRelations;

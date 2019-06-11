@@ -6,6 +6,12 @@ export class ServiceUserMessage extends Entity {
   @property({
     type: 'number',
     id: true,
+    generated: true
+  })
+  id?: number;
+
+  @property({
+    type: 'number',
     mysql: {
       columnName: 'service_user_id',
     },
@@ -14,7 +20,6 @@ export class ServiceUserMessage extends Entity {
 
   @property({
     type: 'number',
-    id: true,
     mysql: {
       columnName: 'message_id',
     },
@@ -26,3 +31,9 @@ export class ServiceUserMessage extends Entity {
     super(data);
   }
 }
+
+export interface ServiceUserMessageRelations {
+
+}
+
+export type ServiceUserMessageWithRelations = ServiceUserMessage & ServiceUserMessageRelations;

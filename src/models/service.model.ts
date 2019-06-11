@@ -1,5 +1,6 @@
-import { Entity, model, property } from '@loopback/repository';
+import { Entity, model, property, belongsTo } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
+import { Deal } from './deal.model';
 
 @model({ name: 'services' })
 export class Service extends Entity {
@@ -28,14 +29,6 @@ export class Service extends Entity {
     },
   })
   modifiedOn?: Date;
-
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'deal_id',
-    },
-  })
-  dealId?: number;
 
   @property({
     type: 'number',
@@ -119,8 +112,26 @@ export class Service extends Entity {
   })
   customerSignature?: string;
 
+  @belongsTo(
+    () => Deal,
+    { keyFrom: 'deal_id', name: 'deal' },
+    {
+      type: 'number',
+      name: 'deal_id',
+      mysql: {
+        columnName: 'deal_id',
+      },
+    },
+  )
+  dealId: number;
 
   constructor(data?: Partial<Service>) {
     super(data);
   }
 }
+
+export interface ServiceRelations {
+
+}
+
+export type ServiceWithRelations = Service & ServiceRelations;

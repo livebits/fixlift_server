@@ -7,10 +7,16 @@ export class UserRole extends Entity {
 
   @property({
     type: 'number',
+    id: true,
+    generated: true
+  })
+  id?: number;
+
+  @property({
+    type: 'number',
     mysql: {
       columnName: 'user_id',
     },
-    id: true
   })
   userId?: number;
 
@@ -19,7 +25,6 @@ export class UserRole extends Entity {
     mysql: {
       columnName: 'role_id',
     },
-    id: true
   })
   roleId?: number;
 
@@ -28,3 +33,9 @@ export class UserRole extends Entity {
     super(data);
   }
 }
+
+export interface UserRoleRelations {
+
+}
+
+export type UserRoleWithRelations = UserRole & UserRoleRelations;

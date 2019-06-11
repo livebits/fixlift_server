@@ -65,3 +65,9 @@ export class DealPlaceholder extends Entity {
     super(data);
   }
 }
+
+export interface DealPlaceholderRelations {
+
+}
+
+export type DealPlaceholderWithRelations = DealPlaceholder & DealPlaceholderRelations;

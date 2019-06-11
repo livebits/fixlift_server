@@ -57,3 +57,9 @@ export class LiftFieldCategory extends Entity {
     super(data);
   }
 }
+
+export interface LiftFieldCategoryRelations {
+
+}
+
+export type LiftFieldCategoryWithRelations = LiftFieldCategory & LiftFieldCategoryRelations;

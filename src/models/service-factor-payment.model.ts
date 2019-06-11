@@ -7,6 +7,13 @@ export class ServiceFactorPayment extends Entity {
   @property({
     type: 'number',
     id: true,
+    generated: true
+  })
+  id?: number;
+
+  @property({
+    type: 'number',
+    id: true,
     mysql: {
       columnName: 'service_factor_id',
     },
@@ -27,3 +34,9 @@ export class ServiceFactorPayment extends Entity {
     super(data);
   }
 }
+
+export interface ServiceFactorPaymentRelations {
+
+}
+
+export type ServiceFactorPaymentWithRelations = ServiceFactorPayment & ServiceFactorPaymentRelations;

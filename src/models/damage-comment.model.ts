@@ -5,10 +5,16 @@ export class DamageComment extends Entity {
 
   @property({
     type: 'number',
+    id: true,
+    generated: true
+  })
+  id?: number;
+
+  @property({
+    type: 'number',
     mysql: {
       columnName: 'damage_id',
     },
-    id: true
   })
   damageId?: number;
 
@@ -17,7 +23,6 @@ export class DamageComment extends Entity {
     mysql: {
       columnName: 'comment_id',
     },
-    id: true
   })
   commentId?: number;
 
@@ -26,3 +31,9 @@ export class DamageComment extends Entity {
     super(data);
   }
 }
+
+export interface DamageCommentRelations {
+
+}
+
+export type DamageCommentWithRelations = DamageComment & DamageCommentRelations;

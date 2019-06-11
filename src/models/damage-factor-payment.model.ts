@@ -5,10 +5,16 @@ export class DamageFactorPayment extends Entity {
 
   @property({
     type: 'number',
+    id: true,
+    generated: true
+  })
+  id?: number;
+
+  @property({
+    type: 'number',
     mysql: {
       columnName: 'damage_factor_id',
     },
-    id: true
   })
   damageFactorId?: number;
 
@@ -17,7 +23,6 @@ export class DamageFactorPayment extends Entity {
     mysql: {
       columnName: 'payment_id',
     },
-    id: true
   })
   paymentId?: number;
 
@@ -26,3 +31,9 @@ export class DamageFactorPayment extends Entity {
     super(data);
   }
 }
+
+export interface DamageFactorPaymentRelations {
+
+}
+
+export type DamageFactorPaymentWithRelations = DamageFactorPayment & DamageFactorPaymentRelations;

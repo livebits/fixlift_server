@@ -1,5 +1,6 @@
-import { Entity, model, property } from '@loopback/repository';
+import { Entity, model, property, belongsTo } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
+import { Deal } from './deal.model';
 
 @model({ name: 'damages' })
 export class Damage extends Entity {
@@ -28,14 +29,6 @@ export class Damage extends Entity {
     },
   })
   modifiedOn?: Date;
-
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'deal_id',
-    },
-  })
-  dealId?: number;
 
   @property({
     type: 'number',
@@ -148,8 +141,26 @@ export class Damage extends Entity {
   })
   customerSignature?: string;
 
+  @belongsTo(
+    () => Deal,
+    { keyFrom: 'deal_id', name: 'deal' },
+    {
+      type: 'number',
+      name: 'deal_id',
+      mysql: {
+        columnName: 'deal_id',
+      },
+    },
+  )
+  dealId: number;
 
   constructor(data?: Partial<Damage>) {
     super(data);
   }
 }
+
+export interface DamageRelations {
+
+}
+
+export type DamageWithRelations = Damage & DamageRelations;

@@ -1,21 +1,35 @@
-import { BootMixin } from '@loopback/boot';
-import { ApplicationConfig, BindingKey } from '@loopback/core';
+import {BootMixin} from '@loopback/boot';
+import {
+  ApplicationConfig,
+  BindingKey,
+  asGlobalInterceptor,
+} from '@loopback/core';
 import {
   RestExplorerBindings,
   RestExplorerComponent,
 } from '@loopback/rest-explorer';
-import { RepositoryMixin } from '@loopback/repository';
-import { RestApplication } from '@loopback/rest';
-import { ServiceMixin } from '@loopback/service-proxy';
+import {RepositoryMixin} from '@loopback/repository';
+import {RestApplication} from '@loopback/rest';
+import {ServiceMixin} from '@loopback/service-proxy';
 import * as path from 'path';
-import { MySequence } from './sequence';
-import { AuthenticationComponent, AuthenticationBindings, registerAuthenticationStrategy } from '@loopback/authentication';
-import { JWTAuthenticationStrategy } from './authentication-strategies/jwt-strategy';
-import { TokenServiceBindings, TokenServiceConstants, PasswordHasherBindings, UserServiceBindings } from './keys';
-import { JWTService } from './services/jwt-service';
-import { BcryptHasher } from './services/hash.password.bcryptjs';
-import { MyUserService } from './services/user-service';
-import { AuthorizationComponent } from './authorization';
+import {MySequence} from './sequence';
+import {
+  AuthenticationComponent,
+  AuthenticationBindings,
+  registerAuthenticationStrategy,
+} from '@loopback/authentication';
+import {JWTAuthenticationStrategy} from './authentication-strategies/jwt-strategy';
+import {
+  TokenServiceBindings,
+  TokenServiceConstants,
+  PasswordHasherBindings,
+  UserServiceBindings,
+} from './keys';
+import {JWTService} from './services/jwt-service';
+import {BcryptHasher} from './services/hash.password.bcryptjs';
+import {MyUserService} from './services/user-service';
+import {AuthorizationComponent} from './authorization';
+import {UniqueUsernameInterceptor} from './interceptors';
 
 /**
  * Information from package.json
@@ -86,5 +100,7 @@ export class FixliftApplication extends BootMixin(
     this.bind(PasswordHasherBindings.PASSWORD_HASHER).toClass(BcryptHasher);
 
     this.bind(UserServiceBindings.USER_SERVICE).toClass(MyUserService);
+
+    this.bind('UniqueUsername').toProvider(UniqueUsernameInterceptor);
   }
 }

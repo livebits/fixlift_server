@@ -1,5 +1,7 @@
-import { Entity, model, property } from '@loopback/repository';
+import { Entity, model, property, belongsTo, hasMany } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
+import { Company } from './company.model';
+import { Deal } from './deal.model';
 
 @model({ name: 'customers' })
 export class Customer extends Entity {
@@ -155,13 +157,13 @@ export class Customer extends Entity {
   })
   city?: string;
 
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'company_id',
-    },
-  })
-  companyId?: number;
+  // @property({
+  //   type: 'number',
+  //   mysql: {
+  //     columnName: 'company_id',
+  //   },
+  // })
+  // companyId?: number;
 
   @property({
     type: 'string',
@@ -176,8 +178,29 @@ export class Customer extends Entity {
   })
   fcmToken?: string;
 
+  @belongsTo(
+    () => Company,
+    { keyFrom: 'company_id', name: 'company' },
+    {
+      type: 'number',
+      name: 'company_id',
+      mysql: {
+        columnName: 'company_id',
+      },
+    },
+  )
+  companyId: number;
+
+  @hasMany(() => Deal, { keyTo: 'customer_id' })
+  deals: Deal[];
 
   constructor(data?: Partial<Customer>) {
     super(data);
   }
 }
+
+export interface CustomerRelations {
+
+}
+
+export type CustomerWithRelations = Customer & CustomerRelations;

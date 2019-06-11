@@ -44,3 +44,9 @@ export class DeviceType extends Entity {
     super(data);
   }
 }
+
+export interface DeviceTypeRelations {
+
+}
+
+export type DeviceTypeWithRelations = DeviceType & DeviceTypeRelations;

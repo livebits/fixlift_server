@@ -57,3 +57,9 @@ export class DamageFactor extends Entity {
     super(data);
   }
 }
+
+export interface DamageFactorRelations {
+
+}
+
+export type DamageFactorWithRelations = DamageFactor & DamageFactorRelations;

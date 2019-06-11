@@ -54,3 +54,9 @@ export class Message extends Entity {
     super(data);
   }
 }
+
+export interface MessageRelations {
+
+}
+
+export type MessageWithRelations = Message & MessageRelations;

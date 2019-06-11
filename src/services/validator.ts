@@ -3,9 +3,9 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import { Credentials } from '../repositories/user.repository';
+import {Credentials} from '../repositories/user.repository';
 import * as isemail from 'isemail';
-import { HttpErrors } from '@loopback/rest';
+import {HttpErrors} from '@loopback/rest';
 
 export function validateCredentials(credentials: Credentials) {
   // Validate Email

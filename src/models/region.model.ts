@@ -52,3 +52,9 @@ export class Region extends Entity {
     super(data);
   }
 }
+
+export interface RegionRelations {
+
+}
+
+export type RegionWithRelations = Region & RegionRelations;

@@ -49,3 +49,9 @@ export class Comment extends Entity {
     super(data);
   }
 }
+
+export interface CommentRelations {
+
+}
+
+export type CommentWithRelations = Comment & CommentRelations;

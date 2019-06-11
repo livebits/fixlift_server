@@ -59,3 +59,9 @@ export class ServiceChecklist extends Entity {
     super(data);
   }
 }
+
+export interface ServiceChecklistRelations {
+
+}
+
+export type ServiceChecklistWithRelations = ServiceChecklist & ServiceChecklistRelations;

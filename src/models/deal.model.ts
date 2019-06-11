@@ -1,5 +1,11 @@
-import { Entity, model, property } from '@loopback/repository';
+import { Entity, model, property, belongsTo, hasMany, hasOne } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
+import { Company } from './company.model';
+import { Damage } from './damage.model';
+import { Service } from './service.model';
+import { ServiceUser } from './service-user.model';
+import { Customer } from './customer.model';
+import { Insurance } from './insurance.model';
 
 @model({ name: 'deals' })
 export class Deal extends Entity {
@@ -28,23 +34,6 @@ export class Deal extends Entity {
     },
   })
   modifiedOn?: Date;
-
-  @property({
-    type: 'number',
-    required: true,
-    mysql: {
-      columnName: 'customer_id',
-    },
-  })
-  customerId: number;
-
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'service_user_id',
-    },
-  })
-  serviceUserId?: number;
 
   @property({
     type: 'string',
@@ -103,14 +92,6 @@ export class Deal extends Entity {
     type: 'string',
   })
   description?: string;
-
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'insurance_id',
-    },
-  })
-  insuranceId?: number;
 
   @property({
     type: 'number',
@@ -215,23 +196,68 @@ export class Deal extends Entity {
   buildingLongitude?: string;
 
   @property({
-    type: 'geopoint',
+    type: 'string',
     mysql: {
       columnName: 'building_location',
     },
   })
   buildingLocation?: string;
 
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'company_id',
+  @belongsTo(
+    () => Company,
+    { keyFrom: 'company_id', name: 'company' },
+    {
+      type: 'number',
+      name: 'company_id',
+      mysql: {
+        columnName: 'company_id',
+      },
     },
-  })
+  )
   companyId?: number;
 
+  @hasMany(() => Damage, { keyTo: 'deal_id' })
+  damages: Damage[];
+
+  @hasMany(() => Service, { keyTo: 'deal_id' })
+  services: Service[];
+
+  @belongsTo(
+    () => ServiceUser,
+    { keyFrom: 'service_user_id', name: 'serviceUser' },
+    {
+      type: 'number',
+      name: 'service_user_id',
+      mysql: {
+        columnName: 'service_user_id',
+      },
+    },
+  )
+  serviceUserId: number;
+
+  @belongsTo(
+    () => Customer,
+    { keyFrom: 'customer_id', name: 'customer' },
+    {
+      type: 'number',
+      name: 'customer_id',
+      mysql: {
+        columnName: 'customer_id',
+      },
+    },
+  )
+  customerId: number;
+
+  @hasOne(() => Insurance, { keyTo: 'deal_id' })
+  insurances: Insurance[];
 
   constructor(data?: Partial<Deal>) {
     super(data);
   }
 }
+
+export interface DealRelations {
+
+}
+
+export type DealWithRelations = Deal & DealRelations;

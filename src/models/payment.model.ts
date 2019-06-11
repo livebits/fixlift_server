@@ -73,3 +73,9 @@ export class Payment extends Entity {
     super(data);
   }
 }
+
+export interface PaymentRelations {
+
+}
+
+export type PaymentWithRelations = Payment & PaymentRelations;
