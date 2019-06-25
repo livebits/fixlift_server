@@ -55,10 +55,10 @@ export class DealPlaceholder extends Entity {
   @property({
     type: 'number',
     mysql: {
-      columnName: 'company_id',
+      columnName: 'company_user_id',
     },
   })
-  companyId?: number;
+  companyUserId?: number;
 
 
   constructor(data?: Partial<DealPlaceholder>) {

@@ -3,11 +3,11 @@ import {
   repository,
   HasManyRepositoryFactory,
 } from '@loopback/repository';
-import {User, UserRelations, Company, UserRole} from '../models';
-import {DbDataSource} from '../datasources';
-import {inject, Getter} from '@loopback/core';
-import {CompanyRepository} from './company.repository';
-import {UserRoleRepository} from './user-role.repository';
+import { User, UserRelations, Company, UserRole } from '../models';
+import { DbDataSource } from '../datasources';
+import { inject, Getter } from '@loopback/core';
+import { CompanyRepository } from './company.repository';
+import { UserRoleRepository } from './user-role.repository';
 
 export type Credentials = {
   username: string;
@@ -18,7 +18,7 @@ export class UserRepository extends DefaultCrudRepository<
   User,
   typeof User.prototype.id,
   UserRelations
-> {
+  > {
   public readonly companies: HasManyRepositoryFactory<
     Company,
     typeof User.prototype.id

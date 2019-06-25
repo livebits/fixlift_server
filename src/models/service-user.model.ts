@@ -65,10 +65,10 @@ export class ServiceUser extends Entity {
   //   type: 'number',
   //   required: true,
   //   mysql: {
-  //     columnName: 'company_id',
+  //     columnName: 'company_user_id',
   //   },
   // })
-  // companyId: number;
+  // companyUserId: number;
 
   @property({
     type: 'string',
@@ -93,16 +93,16 @@ export class ServiceUser extends Entity {
 
   @belongsTo(
     () => Company,
-    { keyFrom: 'company_id', name: 'company' },
+    { keyFrom: 'company_user_id', name: 'company' },
     {
       type: 'number',
-      name: 'company_id',
+      name: 'company_user_id',
       mysql: {
-        columnName: 'company_id',
+        columnName: 'company_user_id',
       },
     },
   )
-  companyId: number;
+  companyUserId: number;
 
   constructor(data?: Partial<ServiceUser>) {
     super(data);

@@ -10,7 +10,7 @@ import {
   repository,
   Where,
 } from '@loopback/repository';
-import {validateCredentials} from '../services/validator';
+import { validateCredentials } from '../services/validator';
 import {
   post,
   param,
@@ -22,8 +22,8 @@ import {
   put,
   del,
 } from '@loopback/rest';
-import {User, UserWithRole, UserRole} from '../models';
-import {inject, intercept} from '@loopback/core';
+import { User, UserWithRole, UserRole } from '../models';
+import { inject, intercept } from '@loopback/core';
 import {
   authenticate,
   UserProfile,
@@ -35,8 +35,8 @@ import {
   CredentialsRequestBody,
   UserProfileSchema,
 } from './specs/user-controller.specs';
-import {Credentials, UserRepository} from '../repositories/user.repository';
-import {PasswordHasher} from '../services/hash.password.bcryptjs';
+import { Credentials, UserRepository } from '../repositories/user.repository';
+import { PasswordHasher } from '../services/hash.password.bcryptjs';
 
 import {
   TokenServiceBindings,
@@ -44,8 +44,8 @@ import {
   UserServiceBindings,
 } from '../keys';
 import * as _ from 'lodash';
-import {authorize} from '../authorization';
-import {UserRoleRepository} from '../repositories';
+import { authorize } from '../authorization';
+import { UserRoleRepository } from '../repositories';
 
 export class UserController {
   constructor(
@@ -58,7 +58,7 @@ export class UserController {
     public jwtService: TokenService,
     @inject(UserServiceBindings.USER_SERVICE)
     public userService: UserService<User, Credentials>,
-  ) {}
+  ) { }
 
   @post('/users')
   @intercept('UniqueUsername')
@@ -93,7 +93,7 @@ export class UserController {
     responses: {
       '200': {
         description: 'User model count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -108,7 +108,7 @@ export class UserController {
     responses: {
       '200': {
         description: 'User PATCH success count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -144,7 +144,7 @@ export class UserController {
     const userRole = new UserRole();
     userRole.userId = id;
     userRole.roleId = user.role;
-    await this.userRoleRepository.deleteAll({userId: id});
+    await this.userRoleRepository.deleteAll({ userId: id });
     await this.userRoleRepository.create(userRole);
     // return user;
   }
@@ -241,7 +241,7 @@ export class UserController {
   })
   async login(
     @requestBody(CredentialsRequestBody) credentials: Credentials,
-  ): Promise<{token: string}> {
+  ): Promise<{ token: string }> {
     // validateCredentials(credentials);
 
     // ensure the user exists, and the password is correct
@@ -253,7 +253,7 @@ export class UserController {
     // create a JSON Web Token based on the user profile
     const token = await this.jwtService.generateToken(userProfile);
 
-    return {token};
+    return { token };
   }
 
   @get('/users', {
@@ -262,7 +262,7 @@ export class UserController {
         description: 'Array of User model instances',
         content: {
           'application/json': {
-            schema: {type: 'array', items: {'x-ts-type': User}},
+            schema: { type: 'array', items: { 'x-ts-type': User } },
           },
         },
       },

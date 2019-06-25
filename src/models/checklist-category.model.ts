@@ -44,10 +44,10 @@ export class ChecklistCategory extends Entity {
   @property({
     type: 'number',
     mysql: {
-      columnName: 'company_id',
+      columnName: 'company_user_id',
     },
   })
-  companyId?: number;
+  companyUserId?: number;
 
   @property({
     type: 'string',

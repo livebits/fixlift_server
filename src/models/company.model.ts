@@ -132,13 +132,13 @@ export class Company extends Entity {
   )
   userId: number;
 
-  @hasMany(() => Deal, {keyTo: 'company_id'})
+  @hasMany(() => Deal, {keyTo: 'company_user_id'})
   deals: Deal[];
 
-  @hasMany(() => Customer, {keyTo: 'company_id'})
+  @hasMany(() => Customer, {keyTo: 'company_user_id'})
   customers: Customer[];
 
-  @hasMany(() => ServiceUser, {keyTo: 'company_id'})
+  @hasMany(() => ServiceUser, {keyTo: 'company_user_id'})
   serviceUsers: ServiceUser[];
 
   constructor(data?: Partial<Company>) {
