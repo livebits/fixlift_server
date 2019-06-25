@@ -19,3 +19,4 @@ export * from './customer-deal.controller';
 export * from './service-user-company.controller';
 export * from './company-service-user.controller';
 export * from './role.controller';
+export * from './user-user-role.controller';

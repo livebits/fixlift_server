@@ -1,14 +1,19 @@
-import { Entity, model, property, belongsTo, hasMany } from '@loopback/repository';
-import { BaseEntity } from './base-entity.model';
-import { User, UserWithRelations } from './user.model';
-import { Deal } from './deal.model';
-import { Customer } from './customer.model';
-import { ServiceUser } from './service-user.model';
+import {
+  Entity,
+  model,
+  property,
+  belongsTo,
+  hasMany,
+} from '@loopback/repository';
+import {BaseEntity} from './base-entity.model';
+import {User, UserWithRelations} from './user.model';
+import {Deal} from './deal.model';
+import {Customer} from './customer.model';
+import {ServiceUser} from './service-user.model';
 
 @model({
   name: 'companies',
   settings: {
-
     foreignKeys: {
       fk_user_userId: {
         // optional, overrides keyName
@@ -33,11 +38,10 @@ import { ServiceUser } from './service-user.model';
   },
 })
 export class Company extends Entity {
-
   @property({
     type: 'number',
     id: true,
-    generated: true
+    generated: true,
   })
   id?: number;
 
@@ -67,7 +71,7 @@ export class Company extends Entity {
   @property({
     type: 'string',
   })
-  mobile?: string;
+  mobile?: number;
 
   @property({
     type: 'string',
@@ -106,7 +110,7 @@ export class Company extends Entity {
 
   @belongsTo(
     () => User,
-    { keyFrom: 'user_id', name: 'user' },
+    {keyFrom: 'user_id', name: 'user'},
     {
       type: 'number',
       index: true,
@@ -128,13 +132,13 @@ export class Company extends Entity {
   )
   userId: number;
 
-  @hasMany(() => Deal, { keyTo: 'company_id' })
+  @hasMany(() => Deal, {keyTo: 'company_id'})
   deals: Deal[];
 
-  @hasMany(() => Customer, { keyTo: 'company_id' })
+  @hasMany(() => Customer, {keyTo: 'company_id'})
   customers: Customer[];
 
-  @hasMany(() => ServiceUser, { keyTo: 'company_id' })
+  @hasMany(() => ServiceUser, {keyTo: 'company_id'})
   serviceUsers: ServiceUser[];
 
   constructor(data?: Partial<Company>) {
@@ -147,3 +151,23 @@ export interface CompanyRelations {
 }
 
 export type CompanyWithRelations = Company & CompanyRelations;
+
+export class CompanyWithUser extends Company {
+  @property({
+    type: 'string',
+    required: true,
+  })
+  username: string;
+
+  @property({
+    type: 'string',
+    required: true,
+  })
+  password: string;
+
+  @property({
+    type: 'number',
+    required: true,
+  })
+  role: number;
+}

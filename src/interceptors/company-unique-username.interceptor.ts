@@ -9,7 +9,7 @@ import {
 } from '@loopback/context';
 import {ValidationError} from 'loopback-datasource-juggler';
 import {HttpErrors} from '@loopback/rest';
-import {UserController} from '../controllers';
+import {UserController, CompanyController} from '../controllers';
 import {Where, FilterBuilder, WhereBuilder} from '@loopback/repository';
 import {User} from '../models';
 
@@ -17,8 +17,8 @@ import {User} from '../models';
  * This class will be bound to the application as an `Interceptor` during
  * `boot`
  */
-@bind({tags: {namespace: 'interceptors', name: 'UniqueUsername'}})
-export class UniqueUsernameInterceptor implements Provider<Interceptor> {
+@bind({tags: {namespace: 'interceptors', name: 'CompanyUniqueUsername'}})
+export class CompanyUniqueUsernameInterceptor implements Provider<Interceptor> {
   /*
   constructor() {}
   */
@@ -44,25 +44,21 @@ export class UniqueUsernameInterceptor implements Provider<Interceptor> {
   ) {
     // Add pre-invocation logic here
 
-    let uc: UserController = <UserController>invocationCtx.target;
+    let cc: CompanyController = <CompanyController>invocationCtx.target;
 
     let whereBuilder = {};
     if (invocationCtx.methodName === 'create') {
-      // whereBuilder.eq('username', invocationCtx.args[0].username);
       whereBuilder = {username: invocationCtx.args[0].username};
     } else {
-      // whereBuilder
-      //   .eq('username', invocationCtx.args[1].username)
-      //   .neq('id', invocationCtx.args[1].id);
       whereBuilder = {
         and: [
           {username: invocationCtx.args[1].username},
-          {id: {neq: invocationCtx.args[1].id}},
+          {id: {neq: invocationCtx.args[1].user_id}},
         ],
       };
     }
 
-    const searchByUsername = await uc.userRepository.count(whereBuilder);
+    const searchByUsername = await cc.userRepository.count(whereBuilder);
 
     if (searchByUsername.count > 0) {
       throw new HttpErrors.UnprocessableEntity(`code:uniqueUsername`);

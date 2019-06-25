@@ -16,13 +16,52 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
-import {Company} from '../models';
-import {CompanyRepository} from '../repositories';
+import {
+  Company,
+  CompanyWithUser,
+  User,
+  UserRole,
+  UserWithRole,
+  Role,
+} from '../models';
+import {
+  CompanyRepository,
+  Credentials,
+  UserRepository,
+  UserRoleRepository,
+} from '../repositories';
+import {intercept, inject} from '@loopback/core';
+import {
+  PasswordHasherBindings,
+  TokenServiceBindings,
+  UserServiceBindings,
+} from '../keys';
+import {PasswordHasher} from '../services/hash.password.bcryptjs';
+import {TokenService, UserService} from '@loopback/authentication';
+import {CompanyService} from '../services/company.service';
+import {service} from 'loopback4-spring';
+
+class CompanyWithUserAndRole {
+  user: User;
+  role: Role;
+  company: Company;
+}
 
 export class CompanyController {
   constructor(
     @repository(CompanyRepository)
-    public companyRepository : CompanyRepository,
+    public companyRepository: CompanyRepository,
+    @repository(UserRepository) public userRepository: UserRepository,
+    @repository(UserRoleRepository)
+    public userRoleRepository: UserRoleRepository,
+    @inject(PasswordHasherBindings.PASSWORD_HASHER)
+    public passwordHasher: PasswordHasher,
+    @inject(TokenServiceBindings.TOKEN_SERVICE)
+    public jwtService: TokenService,
+    @inject(UserServiceBindings.USER_SERVICE)
+    public userService: UserService<User, Credentials>,
+    @service(CompanyService)
+    private companyService: CompanyService,
   ) {}
 
   @post('/companies', {
@@ -33,8 +72,9 @@ export class CompanyController {
       },
     },
   })
-  async create(@requestBody() company: Company): Promise<Company> {
-    return await this.companyRepository.create(company);
+  @intercept('CompanyUniqueUsername')
+  async create(@requestBody() company: CompanyWithUser): Promise<Company> {
+    return await this.companyService.create(company, false);
   }
 
   @get('/companies/count', {
@@ -46,7 +86,8 @@ export class CompanyController {
     },
   })
   async count(
-    @param.query.object('where', getWhereSchemaFor(Company)) where?: Where<Company>,
+    @param.query.object('where', getWhereSchemaFor(Company))
+    where?: Where<Company>,
   ): Promise<Count> {
     return await this.companyRepository.count(where);
   }
@@ -64,9 +105,19 @@ export class CompanyController {
     },
   })
   async find(
-    @param.query.object('filter', getFilterSchemaFor(Company)) filter?: Filter<Company>,
-  ): Promise<Company[]> {
-    return await this.companyRepository.find(filter);
+    @param.query.object('filter', getFilterSchemaFor(Company))
+    filter?: Filter<Company>,
+  ): Promise<any> {
+    // await this.companyRepository.find(filter);
+
+    const sql = `select c.id, c.title, c.mobile, c.phone, c.address, c.status, u.username, r.id as role
+      from companies c
+      left join users u on c.user_id = u.id
+      left join user_roles ur on ur.user_id = u.id
+      left join roles r on r.id = ur.role_id
+      order by c.id desc`;
+
+    return await this.companyRepository.query(sql);
   }
 
   @patch('/companies', {
@@ -79,7 +130,8 @@ export class CompanyController {
   })
   async updateAll(
     @requestBody() company: Company,
-    @param.query.object('where', getWhereSchemaFor(Company)) where?: Where<Company>,
+    @param.query.object('where', getWhereSchemaFor(Company))
+    where?: Where<Company>,
   ): Promise<Count> {
     return await this.companyRepository.updateAll(company, where);
   }
@@ -92,8 +144,18 @@ export class CompanyController {
       },
     },
   })
-  async findById(@param.path.number('id') id: number): Promise<Company> {
-    return await this.companyRepository.findById(id);
+  async findById(@param.path.number('id') id: number): Promise<any> {
+    // return await this.companyRepository.findById(id);
+
+    const sql = `SELECT u.username, c.*, r.id AS role
+      FROM companies c
+      LEFT JOIN users u ON u.id = c.user_id
+      LEFT JOIN user_roles ur ON ur.user_id = u.id
+      LEFT JOIN roles r ON r.id = ur.role_id
+      WHERE c.id=${id}`;
+
+    const r = await this.companyRepository.query(sql, [], [], 0);
+    return r[0];
   }
 
   @patch('/companies/{id}', {
@@ -103,11 +165,19 @@ export class CompanyController {
       },
     },
   })
+  @intercept('CompanyUniqueUsername')
   async updateById(
     @param.path.number('id') id: number,
-    @requestBody() company: Company,
+    @requestBody() company: CompanyWithUser,
   ): Promise<void> {
+    // await this.companyRepository.updateById(id, company);
+
     await this.companyRepository.updateById(id, company);
+    const userRole = new UserRole();
+    userRole.userId = company.userId;
+    userRole.roleId = company.role;
+    await this.userRoleRepository.deleteAll({userId: company.userId});
+    await this.userRoleRepository.create(userRole);
   }
 
   @put('/companies/{id}', {

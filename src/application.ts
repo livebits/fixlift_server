@@ -30,6 +30,8 @@ import {BcryptHasher} from './services/hash.password.bcryptjs';
 import {MyUserService} from './services/user-service';
 import {AuthorizationComponent} from './authorization';
 import {UniqueUsernameInterceptor} from './interceptors';
+import {SpringComponent} from 'loopback4-spring';
+import {CompanyUniqueUsernameInterceptor} from './interceptors/company-unique-username.interceptor';
 
 /**
  * Information from package.json
@@ -54,6 +56,7 @@ export class FixliftApplication extends BootMixin(
     // Bind authentication component related elements
     this.component(AuthenticationComponent);
     this.component(AuthorizationComponent);
+    this.component(SpringComponent);
 
     registerAuthenticationStrategy(this, JWTAuthenticationStrategy);
 
@@ -102,5 +105,8 @@ export class FixliftApplication extends BootMixin(
     this.bind(UserServiceBindings.USER_SERVICE).toClass(MyUserService);
 
     this.bind('UniqueUsername').toProvider(UniqueUsernameInterceptor);
+    this.bind('CompanyUniqueUsername').toProvider(
+      CompanyUniqueUsernameInterceptor,
+    );
   }
 }

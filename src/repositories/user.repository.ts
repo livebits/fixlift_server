@@ -3,10 +3,11 @@ import {
   repository,
   HasManyRepositoryFactory,
 } from '@loopback/repository';
-import {User, UserRelations, Company} from '../models';
+import {User, UserRelations, Company, UserRole} from '../models';
 import {DbDataSource} from '../datasources';
 import {inject, Getter} from '@loopback/core';
 import {CompanyRepository} from './company.repository';
+import {UserRoleRepository} from './user-role.repository';
 
 export type Credentials = {
   username: string;
@@ -50,7 +51,7 @@ export class UserRepository extends DefaultCrudRepository<
     params?: any,
     options?: any,
     getIndex?: number,
-  ): Promise<void> {
+  ): Promise<(User & UserRelations)[]> {
     return new Promise((resolve, reject) => {
       const connector = this.dataSource.connector!;
       connector.execute!(sql, params, options, (err: any, ...results: any) => {

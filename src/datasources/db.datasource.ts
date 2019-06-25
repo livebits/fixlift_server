@@ -1,7 +1,10 @@
-import {inject} from '@loopback/core';
+import {inject, bind} from '@loopback/core';
 import {juggler} from '@loopback/repository';
 import * as config from './db.datasource.json';
 
+@bind({
+  tags: ['transactional'],
+})
 export class DbDataSource extends juggler.DataSource {
   static dataSourceName = 'db';
 
