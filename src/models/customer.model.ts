@@ -191,6 +191,28 @@ export class Customer extends Entity {
   )
   companyUserId: number;
 
+  @property({
+    type: 'string',
+    mysql: {
+      columnName: 'verification_code',
+    },
+  })
+  verificationCode: string;
+
+  @property({
+    type: 'string',
+  })
+  password: string;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'last_login',
+    },
+  })
+  lastLogin?: string;
+
   @hasMany(() => Deal, { keyTo: 'customer_id' })
   deals: Deal[];
 

@@ -26,3 +26,4 @@ export * from './checklist-category.controller';
 export * from './checklist.controller';
 export * from './unit.controller';
 export * from './service-user.controller';
+export * from './customer.controller';

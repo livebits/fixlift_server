@@ -104,6 +104,23 @@ export class ServiceUser extends Entity {
   )
   companyUserId: number;
 
+  @property({
+    type: 'string',
+    mysql: {
+      columnName: 'verification_code',
+    },
+  })
+  verificationCode: string;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+    mysql: {
+      columnName: 'last_login',
+    },
+  })
+  lastLogin?: string;
+
   constructor(data?: Partial<ServiceUser>) {
     super(data);
   }
