@@ -21,6 +21,7 @@ import {
   patch,
   put,
   del,
+  HttpErrors,
 } from '@loopback/rest';
 import { User, UserWithRole, UserRole } from '../models';
 import { inject, intercept } from '@loopback/core';
@@ -42,14 +43,28 @@ import {
   TokenServiceBindings,
   PasswordHasherBindings,
   UserServiceBindings,
+  CustomerServiceBindings,
+  ServiceUserBindings,
+  SMSServiceBindings,
 } from '../keys';
 import * as _ from 'lodash';
 import { authorize } from '../authorization';
-import { UserRoleRepository } from '../repositories';
+import { UserRoleRepository, CustomerRepository, ServiceUserRepository } from '../repositories';
+import { CustomerService } from '../services/customer-service';
+import { ServiceUserService } from '../services/serviceUser-service';
+import { SMSService } from '../services/sms.service';
+
+export type AppUserCredentials = {
+  mobile: string;
+  code?: string;
+  role?: string;
+};
 
 export class UserController {
   constructor(
     @repository(UserRepository) public userRepository: UserRepository,
+    @repository(CustomerRepository) public customerRepository: CustomerRepository,
+    @repository(ServiceUserRepository) public serviceUserRepository: ServiceUserRepository,
     @repository(UserRoleRepository)
     public userRoleRepository: UserRoleRepository,
     @inject(PasswordHasherBindings.PASSWORD_HASHER)
@@ -58,6 +73,13 @@ export class UserController {
     public jwtService: TokenService,
     @inject(UserServiceBindings.USER_SERVICE)
     public userService: UserService<User, Credentials>,
+
+    @inject(CustomerServiceBindings.CUSTOMER_SERVICE)
+    public customerService: CustomerService,
+    @inject(ServiceUserBindings.SERVICE_USER_SERVICE)
+    public serviceUserService: ServiceUserService,
+    @inject(SMSServiceBindings.SMS_SERVICE)
+    private smsService: SMSService,
   ) { }
 
   @post('/users')
@@ -281,5 +303,124 @@ export class UserController {
     return await this.userRepository.query(sql);
 
     // return await this.userRepository.find(filter);
+  }
+
+
+  //login app users
+  @post('/users/app-login', {
+    responses: {
+      '200': {
+        description: 'Message',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                role: {
+                  type: 'string',
+                },
+                message: {
+                  type: 'string',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  async appLogin(
+    @requestBody() credentials: AppUserCredentials,
+  ): Promise<{ message: string, role: string }> {
+
+    // ensure the user exists, and the password is correct
+    let foundCustomerUser = await this.customerService.verifyCredentials(credentials);
+    let foundServiceUser = null;
+
+    if (!foundCustomerUser) {
+      foundServiceUser = await this.serviceUserService.verifyCredentials(credentials);
+    }
+
+    if (!foundCustomerUser && !foundServiceUser) {
+      throw new HttpErrors.NotFound(
+        `Customer with mobile ${credentials.mobile} not found.`,
+      );
+    }
+
+    //generate random code
+    let code = Math.floor(Math.random() * (99999 - 10000)) + 10000;
+
+    if (foundCustomerUser) {
+
+      await this.customerRepository.updateAll({ verificationCode: code.toString() }, { id: foundCustomerUser.id });
+      await this.smsService.sendVerificationCode(Number(foundCustomerUser.mobile), code);
+
+    } else if (foundServiceUser) {
+
+      await this.serviceUserRepository.updateAll({ verificationCode: code.toString() }, { id: foundServiceUser.id });
+      await this.smsService.sendVerificationCode(Number(foundServiceUser.mobile), code);
+    }
+
+    let role = foundCustomerUser !== null ? 'customer' : foundServiceUser !== null ? 'service_user' : 'none'
+
+    return { role: role, message: 'Verification code sent to your mobile number.' };
+  }
+
+  //verify customer user
+  @post('/users/app-verify', {
+    responses: {
+      '200': {
+        description: 'Message',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                token: {
+                  type: 'string',
+                },
+                role: {
+                  type: 'string',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  async verify(
+    @requestBody() credentials: AppUserCredentials,
+  ): Promise<{ token: string, role: string }> {
+
+    if (credentials.role === "customer") {
+      // ensure the user exists, and the password is correct
+      const customer = await this.customerService.verifyCodeCredentials(credentials);
+
+      // convert a User object into a UserProfile object (reduced set of properties)
+      const customerProfile = this.customerService.convertToUserProfile(customer);
+
+      // create a JSON Web Token based on the user profile
+      const token = await this.jwtService.generateToken(customerProfile);
+
+      return { token, role: 'customer' };
+
+    } else if (credentials.role === "service_user") {
+      // ensure the user exists, and the password is correct
+      const user = await this.serviceUserService.verifyCodeCredentials(credentials);
+
+      // convert a User object into a UserProfile object (reduced set of properties)
+      const userProfile = this.serviceUserService.convertToUserProfile(user);
+
+      // create a JSON Web Token based on the user profile
+      const token = await this.jwtService.generateToken(userProfile);
+
+      return { token, role: 'service_user' };
+
+    } else {
+
+      throw new HttpErrors.Unauthorized('The credentials are not correct.');
+    }
+
   }
 }

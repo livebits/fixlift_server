@@ -18,13 +18,27 @@ import {
 } from '@loopback/rest';
 import { Customer } from '../models';
 import { CustomerRepository } from '../repositories';
-import { AuthenticationBindings, UserProfile, authenticate } from '@loopback/authentication';
+import { AuthenticationBindings, UserProfile, authenticate, UserService, TokenService } from '@loopback/authentication';
 import { inject } from '@loopback/core';
+import { CustomerService } from '../services/customer-service';
+import { CustomerServiceBindings, SMSServiceBindings, TokenServiceBindings } from '../keys';
+import { SMSService } from '../services/sms.service';
+
+export type CustomerCredentials = {
+  mobile: string;
+  code?: string;
+};
 
 export class CustomerController {
   constructor(
     @repository(CustomerRepository)
     public customerRepository: CustomerRepository,
+    @inject(CustomerServiceBindings.CUSTOMER_SERVICE)
+    public customerService: CustomerService,
+    @inject(SMSServiceBindings.SMS_SERVICE)
+    private smsService: SMSService,
+    @inject(TokenServiceBindings.TOKEN_SERVICE)
+    public jwtService: TokenService,
   ) { }
 
   @authenticate('jwt')

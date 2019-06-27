@@ -1,4 +1,4 @@
-import {BootMixin} from '@loopback/boot';
+import { BootMixin } from '@loopback/boot';
 import {
   ApplicationConfig,
   BindingKey,
@@ -8,30 +8,37 @@ import {
   RestExplorerBindings,
   RestExplorerComponent,
 } from '@loopback/rest-explorer';
-import {RepositoryMixin} from '@loopback/repository';
-import {RestApplication} from '@loopback/rest';
-import {ServiceMixin} from '@loopback/service-proxy';
+import { RepositoryMixin } from '@loopback/repository';
+import { RestApplication } from '@loopback/rest';
+import { ServiceMixin } from '@loopback/service-proxy';
 import * as path from 'path';
-import {MySequence} from './sequence';
+import { MySequence } from './sequence';
 import {
   AuthenticationComponent,
   AuthenticationBindings,
   registerAuthenticationStrategy,
 } from '@loopback/authentication';
-import {JWTAuthenticationStrategy} from './authentication-strategies/jwt-strategy';
+import { JWTAuthenticationStrategy } from './authentication-strategies/jwt-strategy';
 import {
   TokenServiceBindings,
   TokenServiceConstants,
   PasswordHasherBindings,
   UserServiceBindings,
+  CustomerServiceBindings,
+  SMSServiceBindings,
+  ServiceUserBindings,
 } from './keys';
-import {JWTService} from './services/jwt-service';
-import {BcryptHasher} from './services/hash.password.bcryptjs';
-import {MyUserService} from './services/user-service';
-import {AuthorizationComponent} from './authorization';
-import {UniqueUsernameInterceptor} from './interceptors';
-import {SpringComponent} from 'loopback4-spring';
-import {CompanyUniqueUsernameInterceptor} from './interceptors/company-unique-username.interceptor';
+import { JWTService } from './services/jwt-service';
+import { BcryptHasher } from './services/hash.password.bcryptjs';
+import { MyUserService } from './services/user-service';
+import { AuthorizationComponent } from './authorization';
+import { UniqueUsernameInterceptor } from './interceptors';
+import { SpringComponent } from 'loopback4-spring';
+import { CompanyUniqueUsernameInterceptor } from './interceptors/company-unique-username.interceptor';
+import { CustomerService } from './services/customer-service';
+import { SMSService } from './services/sms.service';
+import { ServiceUser } from './models';
+import { ServiceUserService } from './services/serviceUser-service';
 
 /**
  * Information from package.json
@@ -108,5 +115,9 @@ export class FixliftApplication extends BootMixin(
     this.bind('CompanyUniqueUsername').toProvider(
       CompanyUniqueUsernameInterceptor,
     );
+
+    this.bind(CustomerServiceBindings.CUSTOMER_SERVICE).toClass(CustomerService);
+    this.bind(ServiceUserBindings.SERVICE_USER_SERVICE).toClass(ServiceUserService);
+    this.bind(SMSServiceBindings.SMS_SERVICE).toClass(SMSService);
   }
 }

@@ -139,20 +139,12 @@ export class Deal extends Entity {
   hasTwoMonthService?: boolean;
 
   @property({
-    type: 'boolean',
+    type: 'string',
     mysql: {
-      columnName: 'official_time_service',
+      columnName: 'service_time_type',
     },
   })
-  officialTimeService?: boolean;
-
-  @property({
-    type: 'boolean',
-    mysql: {
-      columnName: 'all_time_service',
-    },
-  })
-  allTimeService?: boolean;
+  serviceTimeType?: string;
 
   @property({
     type: 'number',
