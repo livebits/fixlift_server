@@ -12,7 +12,7 @@ import { PasswordHasherBindings } from '../keys';
 import { inject } from '@loopback/context';
 import { Customer, ServiceUser } from '../models';
 import { CustomerRepository, ServiceUserRepository } from '../repositories';
-import { ServiceUserCredentials } from '../controllers';
+import { AppUserCredentials } from '../controllers';
 
 export class ServiceUserService {
   constructor(
@@ -21,7 +21,7 @@ export class ServiceUserService {
     public passwordHasher: PasswordHasher,
   ) { }
 
-  async verifyCredentials(credentials: ServiceUserCredentials): Promise<ServiceUser | null> {
+  async verifyCredentials(credentials: AppUserCredentials): Promise<ServiceUser | null> {
     const foundUser = await this.ServiceUserRepository.findOne({
       where: { mobile: credentials.mobile },
     });
@@ -35,7 +35,7 @@ export class ServiceUserService {
     return foundUser;
   }
 
-  async verifyCodeCredentials(credentials: ServiceUserCredentials): Promise<ServiceUser> {
+  async verifyCodeCredentials(credentials: AppUserCredentials): Promise<ServiceUser> {
     const foundUser = await this.ServiceUserRepository.findOne({
       where: { mobile: credentials.mobile },
     });

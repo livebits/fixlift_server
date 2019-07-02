@@ -8,7 +8,6 @@ import { PasswordHasher } from './services/hash.password.bcryptjs';
 import { TokenService, UserService } from '@loopback/authentication';
 import { User, Customer } from './models';
 import { Credentials } from './repositories/user.repository';
-import { CustomerCredentials } from './controllers';
 import { SMSService } from './services/sms.service';
 import { CustomerService } from './services/customer-service';
 import { ServiceUserService } from './services/serviceUser-service';

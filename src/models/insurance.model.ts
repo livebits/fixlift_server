@@ -62,7 +62,7 @@ export class Insurance extends Entity {
   @property({
     type: 'boolean',
     mysql: {
-      columnName: 'all_deal_cost',
+      columnName: 'add_deal_cost',
     },
   })
   addDealCost?: boolean;

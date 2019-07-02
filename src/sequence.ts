@@ -21,7 +21,6 @@ import {
   AuthorizationMetadata,
 } from './authorization';
 import { User } from './models';
-import { authenticate, STRATEGY } from 'loopback4-authentication';
 import { UserServiceBindings } from './keys';
 import { Credentials, UserRepository } from './repositories';
 import { repository } from '@loopback/repository';

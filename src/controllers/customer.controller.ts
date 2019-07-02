@@ -24,11 +24,6 @@ import { CustomerService } from '../services/customer-service';
 import { CustomerServiceBindings, SMSServiceBindings, TokenServiceBindings } from '../keys';
 import { SMSService } from '../services/sms.service';
 
-export type CustomerCredentials = {
-  mobile: string;
-  code?: string;
-};
-
 export class CustomerController {
   constructor(
     @repository(CustomerRepository)

@@ -27,3 +27,8 @@ export * from './checklist.controller';
 export * from './unit.controller';
 export * from './service-user.controller';
 export * from './customer.controller';
+export * from './deal.controller';
+export * from './device-types.controller';
+export * from './lift-field-categories.controller';
+export * from './lift-fields.controller';
+export * from './lift.controller';

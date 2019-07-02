@@ -78,7 +78,7 @@ export class Deal extends Entity {
   @property({
     type: 'date',
     mysql: {
-      columnName: 'warrantly_finish_date',
+      columnName: 'warranty_finish_date',
     },
   })
   warrantyFinishDate?: string;
@@ -253,3 +253,78 @@ export interface DealRelations {
 }
 
 export type DealWithRelations = Deal & DealRelations;
+
+
+export class FullDeal extends Deal {
+  @property({
+    type: 'date',
+  })
+  startDate?: string;
+
+  @property({
+    type: 'date',
+  })
+  finishDate?: string;
+
+  @property({
+    type: 'number',
+  })
+  cost?: number;
+
+
+  @property({
+    type: 'number',
+  })
+  insuranceId?: number;
+
+  @property({
+    type: 'string',
+  })
+  insuranceNumber?: string;
+
+  @property({
+    type: 'boolean',
+  })
+  addDealCost?: boolean;
+
+  @property({
+    type: 'string',
+  })
+  location: string;
+
+  //lift fields
+  @property({
+    type: 'number',
+  })
+  liftId?: number;
+
+  @property({
+    type: 'string',
+  })
+  nationalId?: string;
+
+  @property({
+    type: 'number',
+  })
+  capacity?: number;
+
+  @property({
+    type: 'number',
+  })
+  stopsCount?: number;
+
+  @property({
+    type: 'string',
+  })
+  deviceTypeId?: string;
+
+  @property({
+    type: 'string',
+  })
+  liftType?: string;
+
+  @property({
+    type: 'string',
+  })
+  field?: any;
+}

@@ -53,10 +53,10 @@ export class Lift extends Entity {
   @property({
     type: 'string',
     mysql: {
-      columnName: 'device_type',
+      columnName: 'device_type_id',
     },
   })
-  deviceType?: string;
+  deviceTypeId?: string;
 
   @property({
     type: 'string',

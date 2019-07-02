@@ -11,8 +11,8 @@ import { PasswordHasher } from './hash.password.bcryptjs';
 import { PasswordHasherBindings } from '../keys';
 import { inject } from '@loopback/context';
 import { Customer } from '../models';
-import { CustomerCredentials } from '../controllers';
 import { CustomerRepository } from '../repositories';
+import { AppUserCredentials } from '../controllers';
 
 export class CustomerService {
   constructor(
@@ -21,7 +21,7 @@ export class CustomerService {
     public passwordHasher: PasswordHasher,
   ) { }
 
-  async verifyCredentials(credentials: CustomerCredentials): Promise<Customer | null> {
+  async verifyCredentials(credentials: AppUserCredentials): Promise<Customer | null> {
     const foundUser = await this.customerRepository.findOne({
       where: { mobile: credentials.mobile },
     });
@@ -43,7 +43,7 @@ export class CustomerService {
     return foundUser;
   }
 
-  async verifyCodeCredentials(credentials: CustomerCredentials): Promise<Customer> {
+  async verifyCodeCredentials(credentials: AppUserCredentials): Promise<Customer> {
     const foundUser = await this.customerRepository.findOne({
       where: { mobile: credentials.mobile },
     });
