@@ -17,8 +17,8 @@ import { User } from '../models';
  * This class will be bound to the application as an `Interceptor` during
  * `boot`
  */
-@bind({ tags: { namespace: 'interceptors', name: 'UniqueUsername' } })
-export class UniqueUsernameInterceptor implements Provider<Interceptor> {
+@bind({ tags: { namespace: 'interceptors', name: 'UniqueMobile' } })
+export class UniqueMobileInterceptor implements Provider<Interceptor> {
   /*
   constructor() {}
   */
@@ -43,21 +43,18 @@ export class UniqueUsernameInterceptor implements Provider<Interceptor> {
     next: () => ValueOrPromise<InvocationResult>,
   ) {
     // Add pre-invocation logic here
+    console.log(invocationCtx);
 
     let uc: UserController = <UserController>invocationCtx.target;
-    console.log(invocationCtx)
 
     let whereBuilder = {};
     if (invocationCtx.methodName === 'create') {
-      // whereBuilder.eq('username', invocationCtx.args[0].username);
-      whereBuilder = { username: invocationCtx.args[0].username };
+      whereBuilder = { mobile: invocationCtx.args[0].mobile };
+
     } else {
-      // whereBuilder
-      //   .eq('username', invocationCtx.args[1].username)
-      //   .neq('id', invocationCtx.args[1].id);
       whereBuilder = {
         and: [
-          { username: invocationCtx.args[1].username },
+          { mobile: invocationCtx.args[1].mobile },
           { id: { neq: invocationCtx.args[1].id } },
         ],
       };

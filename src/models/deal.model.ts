@@ -65,7 +65,7 @@ export class Deal extends Entity {
       columnName: 'contract_start_date',
     },
   })
-  contractStartDate?: string;
+  contractStartDate: string;
 
   @property({
     type: 'date',
@@ -73,7 +73,7 @@ export class Deal extends Entity {
       columnName: 'contract_finish_date',
     },
   })
-  contractFinishDate?: string;
+  contractFinishDate: string;
 
   @property({
     type: 'date',
@@ -169,7 +169,7 @@ export class Deal extends Entity {
     },
 
   })
-  serviceDay?: number;
+  serviceDay: number;
 
   @property({
     type: 'string',

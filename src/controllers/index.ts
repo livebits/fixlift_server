@@ -32,3 +32,7 @@ export * from './device-types.controller';
 export * from './lift-field-categories.controller';
 export * from './lift-fields.controller';
 export * from './lift.controller';
+export * from './services.controller';
+export * from './damages.controller';
+export * from './customer-messages.controller';
+export * from './emergencies.controller';

@@ -1,4 +1,4 @@
-import {repository} from '@loopback/repository';
+import { repository } from '@loopback/repository';
 import {
   CompanyRepository,
   UserRepository,
@@ -13,15 +13,15 @@ import {
   CompanyWithUser,
   UserRole,
 } from '../models';
-import {transactional} from 'loopback4-spring';
+import { transactional } from 'loopback4-spring';
 import {
   PasswordHasherBindings,
   TokenServiceBindings,
   UserServiceBindings,
 } from '../keys';
-import {PasswordHasher} from './hash.password.bcryptjs';
-import {TokenService, UserService} from '@loopback/authentication';
-import {inject} from '@loopback/core';
+import { PasswordHasher } from './hash.password.bcryptjs';
+import { TokenService, UserService } from '@loopback/authentication';
+import { inject } from '@loopback/core';
 
 export class CompanyService {
   constructor(
@@ -36,7 +36,7 @@ export class CompanyService {
     public jwtService: TokenService,
     @inject(UserServiceBindings.USER_SERVICE)
     public userService: UserService<User, Credentials>,
-  ) {}
+  ) { }
 
   @transactional()
   async create(
@@ -70,6 +70,8 @@ export class CompanyService {
     delete company.role;
 
     company.userId = savedUser.id ? savedUser.id : 0;
+    company.latitude = company.location.split(":")[0];
+    company.longitude = company.location.split(":")[1];
     const company_object = await this.companyRepository.create(
       company,
       options,
@@ -100,6 +102,6 @@ export class CompanyService {
     const users = await this.userRepository.find();
     const companys = await this.companyRepository.find();
 
-    return {users, companys};
+    return { users, companys };
   }
 }

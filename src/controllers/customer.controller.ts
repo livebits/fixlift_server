@@ -152,4 +152,23 @@ export class CustomerController {
   async deleteById(@param.path.number('id') id: number): Promise<void> {
     await this.customerRepository.deleteById(id);
   }
+
+  //app apis
+  @get('/customers/stats/{id}', {
+    responses: {
+      '200': {
+        description: 'Customer model instance',
+        content: { 'application/json': { schema: { 'x-ts-type': Customer } } },
+      },
+    },
+  })
+  async stats(@param.path.number('id') id: number): Promise<any> {
+
+    const sql = `SELECT c.name, c.type, c.national_code AS nationalCode,
+      c.mobile, c.phone, c.birth_date AS birthDate, COALESCE(c.password, 0) as balance
+      FROM customers c
+      WHERE c.id = ${id}`;
+
+    return await this.customerRepository.query(sql);
+  }
 }

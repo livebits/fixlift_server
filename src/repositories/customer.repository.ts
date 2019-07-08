@@ -22,4 +22,34 @@ export class CustomerRepository extends DefaultCrudRepository<
     this.deals = this.createHasManyRepositoryFactoryFor('deals', dealRepositoryGetter);
     this.company = this.createBelongsToAccessorFor('company', companyRepositoryGetter);
   }
+
+  async query(
+    sql: string,
+    params?: any,
+    options?: any,
+    getIndex?: number,
+  ): Promise<(Customer & CustomerRelations)[]> {
+    return new Promise((resolve, reject) => {
+      const connector = this.dataSource.connector!;
+      connector.execute!(sql, params, options, (err: any, ...results: any) => {
+        if (err) {
+          return reject(err);
+        }
+
+        if (results.length === 0) {
+          return resolve();
+        }
+
+        if (results.length === 1) {
+          return resolve(results[0]);
+        }
+
+        if (getIndex) {
+          return resolve(results[getIndex]);
+        }
+
+        resolve(results);
+      });
+    });
+  }
 }

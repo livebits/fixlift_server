@@ -164,3 +164,12 @@ export interface DamageRelations {
 }
 
 export type DamageWithRelations = Damage & DamageRelations;
+
+export class DamageFilter extends Damage {
+
+  @property({
+    type: 'string',
+  })
+  dealContractNumber?: string;
+
+}

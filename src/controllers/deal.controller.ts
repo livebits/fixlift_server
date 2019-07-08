@@ -82,9 +82,13 @@ export class DealController {
   ): Promise<any[]> {
     // return await this.dealRepository.find(filter);
 
-    const sql = `SELECT d.id, c.name AS customer_name, d.building_name, d.full_deal_cost
+    const sql = `SELECT d.id, c.name AS customer_name, d.building_name, d.contract_number,
+      d.contract_finish_date, d.cost_per_service, d.full_deal_cost, d.service_day,
+      r.name AS region, su.name as service_user_name
       FROM deals d
       LEFT JOIN customers c ON c.id = d.customer_id
+      LEFT JOIN regions r ON r.id = d.building_region
+      LEFT JOIN service_users su ON d.service_user_id = su.id
       order by d.id desc`;
 
     return await this.dealRepository.query(sql);

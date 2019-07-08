@@ -123,7 +123,7 @@ export class Service extends Entity {
       },
     },
   )
-  dealId: number;
+  dealId?: number;
 
   constructor(data?: Partial<Service>) {
     super(data);
@@ -135,3 +135,13 @@ export interface ServiceRelations {
 }
 
 export type ServiceWithRelations = Service & ServiceRelations;
+
+
+export class ServiceFilter extends Service {
+
+  @property({
+    type: 'string',
+  })
+  dealContractNumber?: string;
+
+}
