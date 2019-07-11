@@ -38,3 +38,5 @@ export * from './service.repository';
 export * from './unit.repository';
 export * from './user-role.repository';
 export * from './lift-field-value.repository';
+export * from './customer-payment.repository';
+export * from './company-message-template.repository';

@@ -1,26 +1,27 @@
 export const enum PermissionKey {
-  // For accessing own (logged in user) profile
-  ViewOwnUser = 'ViewOwnUser',
-  // For accessing other users profile.
-  ViewAnyUser = 'ViewAnyUser',
-  // For creating a user
-  CreateAnyUser = 'CreateAnyUser',
-  // For updating own (logged in user) profile
-  UpdateOwnUser = 'UpdateOwnUser',
-  // For updating other users profile
-  UpdateAnyUser = 'UpdateAnyUser',
-  // For deleting a user
-  DeleteAnyUser = 'DeleteAnyUser',
-
-  // For accessing a role
-  ViewRoles = 'ViewRoles',
-  // For creating a role
-  CreateRoles = 'CreateRoles',
-  // For updating a role info
-  UpdateRoles = 'UpdateRoles',
-  // For removing a role
-  DeleteRoles = 'DeleteRoles',
-
-  // For manage roles
-  ManageRoles = 'ManageRoles',
+  dashboard = "view_dashboard",
+  companyDashboard = "view_companyDashboard",
+  schedules = "view_schedules",
+  users = "view_users",
+  roles = "view_roles",
+  companies = "view_companies",
+  deviceTypes = "view_deviceTypes",
+  regions = "view_regions",
+  segments = "view_segments",
+  checklistCategories = "view_checklistCategories",
+  checklists = "view_checklists",
+  units = "view_units",
+  serviceUsers = "view_serviceUsers",
+  services = "view_services",
+  damages = "view_damages",
+  emergencies = "view_emergencies",
+  customers = "view_customers",
+  deals = "view_deals",
+  financials = "view_financials",
+  dealsArchive = "view_dealsArchive",
+  liftFieldCategories = "view_liftFieldCategories",
+  liftFields = "view_liftFields",
+  dealPlaceholders = "view_dealPlaceholders",
+  messageTemplates = "view_messageTemplates",
+  companyMessageTemplates = "view_companyMessageTemplates"
 }

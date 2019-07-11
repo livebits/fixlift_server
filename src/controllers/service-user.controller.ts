@@ -16,18 +16,27 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
-import { ServiceUser } from '../models';
-import { ServiceUserRepository } from '../repositories';
+import { ServiceUser, Damage, Payment, WorkPayment, Deal } from '../models';
+import { ServiceUserRepository, DamageRepository, CustomerRepository } from '../repositories';
 import { authenticate, AuthenticationBindings, UserProfile } from '@loopback/authentication';
-import { inject } from '@loopback/core';
+import { inject, intercept } from '@loopback/core';
+import { PaymentService } from '../services/payment.service';
+import { service } from 'loopback4-spring';
 
 export class ServiceUserController {
   constructor(
     @repository(ServiceUserRepository)
     public serviceUserRepository: ServiceUserRepository,
+    @repository(CustomerRepository)
+    public customerRepository: CustomerRepository,
+    @repository(DamageRepository)
+    public damageRepository: DamageRepository,
+    @service(PaymentService)
+    private paymentService: PaymentService,
   ) { }
 
   @authenticate('jwt')
+  @intercept('UniqueMobile')
   @post('/service-users', {
     responses: {
       '200': {
@@ -104,6 +113,8 @@ export class ServiceUserController {
     return await this.serviceUserRepository.findById(id);
   }
 
+  @authenticate('jwt')
+  @intercept('UniqueMobile')
   @patch('/service-users/{id}', {
     responses: {
       '204': {
@@ -141,5 +152,96 @@ export class ServiceUserController {
   })
   async deleteById(@param.path.number('id') id: number): Promise<void> {
     await this.serviceUserRepository.deleteById(id);
+  }
+
+  //app apis
+  @authenticate('jwt')
+  @post('/service-users/add-damage', {
+    responses: {
+      '200': {
+        description: 'Damage model instance',
+        content: { 'application/json': { schema: { 'x-ts-type': Damage } } },
+      },
+    },
+  })
+  async addDamage(
+    @requestBody() damage: Damage,
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile
+  ): Promise<Damage> {
+
+    damage.createdBy = "service_user";
+    damage.creatorId = Number(currentUser.id);
+    return await this.damageRepository.create(damage);
+  }
+
+  @authenticate('jwt')
+  @post('/service-users/add-customer-payments', {
+    responses: {
+      '200': {
+        description: 'CustomerPayment model instance',
+        content: { 'application/json': { schema: { 'x-ts-type': Payment } } },
+      },
+    },
+  })
+  async createByServiceUser(
+    @requestBody() workPayment: WorkPayment,
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile
+  ): Promise<Payment> {
+    let serviceUser = await this.serviceUserRepository.findById(Number(currentUser.id));
+    return await this.paymentService.create(serviceUser.companyUserId, workPayment, false);
+  }
+
+  @get('/service-users/stats', {
+    responses: {
+      '200': {
+        description: 'Customer model instance',
+        content: { 'application/json': { schema: { 'x-ts-type': ServiceUser } } },
+      },
+    },
+  })
+  async stats(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile
+  ): Promise<any> {
+
+    const sql = `SELECT s.*, COALESCE(s.id, 0) as balance
+      FROM service_users s
+      WHERE s.id = ${currentUser.id}`;
+
+    const serviceUser = await this.serviceUserRepository.query(sql);
+    return serviceUser[0]
+  }
+
+  @authenticate('jwt')
+  @get('/service-users/deals', {
+    responses: {
+      '200': {
+        description: 'Array of Deal model instances',
+        content: {
+          'application/json': {
+            schema: { type: 'array', items: { 'x-ts-type': Deal } },
+          },
+        },
+      },
+    },
+  })
+  async getDeals(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile
+  ): Promise<any[]> {
+
+    const sql = `SELECT d.id, c.id AS customer_id, c.name AS customer_name, d.building_name, d.contract_number,
+      d.contract_finish_date, d.cost_per_service, d.full_deal_cost, d.service_day,
+      r.name AS region, su.name as service_user_name, su.id as service_user_id
+      FROM deals d
+      LEFT JOIN customers c ON c.id = d.customer_id
+      LEFT JOIN regions r ON r.id = d.building_region
+      LEFT JOIN service_users su ON d.service_user_id = su.id
+      WHERE d.company_user_id = su.company_user_id AND su.id = ${currentUser.id}
+      order by d.id desc`;
+
+    return await this.serviceUserRepository.query(sql);
   }
 }

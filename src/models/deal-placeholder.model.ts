@@ -31,6 +31,9 @@ export class DealPlaceholder extends Entity {
 
   @property({
     type: 'string',
+    index: {
+      unique: true
+    }
   })
   keyword?: string;
 
@@ -38,6 +41,14 @@ export class DealPlaceholder extends Entity {
     type: 'string',
   })
   name?: string;
+
+  @property({
+    type: 'string',
+    mysql: {
+      columnName: 'property_model',
+    },
+  })
+  propertyModel?: string;
 
   @property({
     type: 'string',
@@ -52,15 +63,6 @@ export class DealPlaceholder extends Entity {
   })
   status?: boolean;
 
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'company_user_id',
-    },
-  })
-  companyUserId?: number;
-
-
   constructor(data?: Partial<DealPlaceholder>) {
     super(data);
   }
@@ -71,3 +73,10 @@ export interface DealPlaceholderRelations {
 }
 
 export type DealPlaceholderWithRelations = DealPlaceholder & DealPlaceholderRelations;
+
+export class TableFieldsQuery {
+  @property({
+    type: 'string',
+  })
+  table: string;
+}

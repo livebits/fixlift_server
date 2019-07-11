@@ -160,6 +160,7 @@ export class DamagesController {
     await this.damageRepository.deleteById(id);
   }
 
+  @authenticate('jwt')
   @post('/damages/filter', {
     responses: {
       '200': {
@@ -170,14 +171,32 @@ export class DamagesController {
   })
   async filter(@requestBody() damageFilter: DamageFilter): Promise<any> {
 
-    // return await this.serviceRepository.create(service);
+    let where = '';
+    if (damageFilter.status && damageFilter.status !== "") {
+      // where += `WHERE dmg.status = '${damageFilter.status}'`;
+    }
 
-    const sql = `SELECT dmg.*, d.*, l.*
+    if (where !== '') {
+      if (damageFilter.dealContractNumber && damageFilter.dealContractNumber !== "") {
+        where += ` AND d.contract_number = '${damageFilter.dealContractNumber}'`;
+      }
+    } else {
+      if (damageFilter.dealContractNumber && damageFilter.dealContractNumber !== "") {
+        where += `WHERE d.contract_number = '${damageFilter.dealContractNumber}'`;
+      }
+    }
+
+    const sql = `SELECT dmg.*, dmg.id AS damage_id, dmg.description AS damage_description,
+      d.*, d.id AS deal_id, d.service_user_id as deal_service_user_id, l.*,
+      l.id AS lift_id, r.name AS region_name
       FROM damages dmg
-      LEFT JOIN deal d ON d.id = dmg.deal_id
+      LEFT JOIN deals d ON d.id = dmg.deal_id
       LEFT JOIN lifts l ON d.id = l.deal_id
-      WHERE dmg.status = ${damageFilter.status} AND d.contract_number = ${damageFilter.dealContractNumber}
+      LEFT JOIN regions r ON d.building_region = r.id
+      ${where}
       order by dmg.id desc`;
+    console.log(sql);
+
 
     return await this.damageRepository.query(sql);
   }

@@ -65,6 +65,7 @@ export class DealController {
     return await this.dealRepository.count(where);
   }
 
+  @authenticate('jwt')
   @get('/deals', {
     responses: {
       '200': {
@@ -78,13 +79,15 @@ export class DealController {
     },
   })
   async find(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
     @param.query.object('filter', getFilterSchemaFor(Deal)) filter?: Filter<Deal>,
   ): Promise<any[]> {
     // return await this.dealRepository.find(filter);
 
-    const sql = `SELECT d.id, c.name AS customer_name, d.building_name, d.contract_number,
+    const sql = `SELECT d.id, c.id AS customer_id, c.name AS customer_name, d.building_name, d.contract_number,
       d.contract_finish_date, d.cost_per_service, d.full_deal_cost, d.service_day,
-      r.name AS region, su.name as service_user_name
+      r.name AS region, su.name as service_user_name, su.id as service_user_id
       FROM deals d
       LEFT JOIN customers c ON c.id = d.customer_id
       LEFT JOIN regions r ON r.id = d.building_region
@@ -137,7 +140,6 @@ export class DealController {
       LEFT JOIN lifts l ON d.id = l.deal_id
       WHERE d.id=${id}`;
 
-
     const r = await this.dealRepository.query(sql, [], [], 0);
     return r[0];
 
@@ -185,5 +187,54 @@ export class DealController {
   })
   async deleteById(@param.path.number('id') id: number): Promise<void> {
     await this.dealRepository.deleteById(id);
+  }
+
+  @get('/customer-deals/{customer_id}', {
+    responses: {
+      '200': {
+        description: 'Get customer deals',
+        content: { 'application/json': { schema: { 'x-ts-type': Deal } } },
+      },
+    },
+  })
+  async getCustomerDeals(@param.path.number('customer_id') customerId: number): Promise<any> {
+
+    const sql = `SELECT d.*
+      FROM deals d
+      WHERE d.customer_id=${customerId}`;
+
+    const r = await this.dealRepository.query(sql, [], [], 0);
+    return r[0];
+  }
+
+  @authenticate('jwt')
+  @get('/deals/archive', {
+    responses: {
+      '200': {
+        description: 'Array of Deal model instances',
+        content: {
+          'application/json': {
+            schema: { type: 'array', items: { 'x-ts-type': Deal } },
+          },
+        },
+      },
+    },
+  })
+  async archive(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
+    @param.query.object('filter', getFilterSchemaFor(Deal)) filter?: Filter<Deal>,
+  ): Promise<any[]> {
+
+    const sql = `SELECT d.id, c.id AS customer_id, c.name AS customer_name, d.building_name, d.contract_number,
+      d.contract_finish_date, d.cost_per_service, d.full_deal_cost, d.service_day,
+      r.name AS region, su.name as service_user_name, su.id as service_user_id
+      FROM deals d
+      LEFT JOIN customers c ON c.id = d.customer_id
+      LEFT JOIN regions r ON r.id = d.building_region
+      LEFT JOIN service_users su ON d.service_user_id = su.id
+      order by d.id desc`;
+
+    return await this.dealRepository.query(sql);
   }
 }

@@ -39,6 +39,7 @@ import { CustomerService } from './services/customer-service';
 import { SMSService } from './services/sms.service';
 import { ServiceUser } from './models';
 import { ServiceUserService } from './services/serviceUser-service';
+import { UniqueMobileInterceptor } from './interceptors/unique-mobile.interceptor';
 
 /**
  * Information from package.json
@@ -112,6 +113,7 @@ export class FixliftApplication extends BootMixin(
     this.bind(UserServiceBindings.USER_SERVICE).toClass(MyUserService);
 
     this.bind('UniqueUsername').toProvider(UniqueUsernameInterceptor);
+    this.bind('UniqueMobile').toProvider(UniqueMobileInterceptor);
     this.bind('CompanyUniqueUsername').toProvider(
       CompanyUniqueUsernameInterceptor,
     );

@@ -36,3 +36,8 @@ export * from './services.controller';
 export * from './damages.controller';
 export * from './customer-messages.controller';
 export * from './emergencies.controller';
+export * from './messages.controller';
+export * from './customer-payments.controller';
+export * from './deal-placeholder.controller';
+export * from './message-templates.controller';
+export * from './company-message-templates.controller';

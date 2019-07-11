@@ -9,7 +9,7 @@ import {
 } from '@loopback/context';
 import { ValidationError } from 'loopback-datasource-juggler';
 import { HttpErrors } from '@loopback/rest';
-import { UserController } from '../controllers';
+import { UserController, ServiceUserController, CustomerController } from '../controllers';
 import { Where, FilterBuilder, WhereBuilder } from '@loopback/repository';
 import { User } from '../models';
 
@@ -43,27 +43,62 @@ export class UniqueMobileInterceptor implements Provider<Interceptor> {
     next: () => ValueOrPromise<InvocationResult>,
   ) {
     // Add pre-invocation logic here
-    console.log(invocationCtx);
+    let searchByMobile: number = 0;
 
-    let uc: UserController = <UserController>invocationCtx.target;
+    if (invocationCtx instanceof ServiceUserController) {
+      let suc: ServiceUserController = <ServiceUserController>invocationCtx.target;
+      let whereBuilder = {};
+      if (invocationCtx.methodName === 'create') {
+        whereBuilder = { mobile: invocationCtx.args[0].mobile };
 
-    let whereBuilder = {};
-    if (invocationCtx.methodName === 'create') {
-      whereBuilder = { mobile: invocationCtx.args[0].mobile };
+      } else {
+        whereBuilder = {
+          and: [
+            { mobile: invocationCtx.args[1].mobile },
+            { id: { neq: invocationCtx.args[1].id } },
+          ],
+        };
+      }
+
+      const result = await suc.serviceUserRepository.count(whereBuilder);
+      searchByMobile = result.count;
+
+      if (searchByMobile == 0) {
+
+        const result2 = await suc.customerRepository.count(whereBuilder);
+        searchByMobile = result2.count;
+      }
 
     } else {
-      whereBuilder = {
-        and: [
-          { mobile: invocationCtx.args[1].mobile },
-          { id: { neq: invocationCtx.args[1].id } },
-        ],
-      };
+
+      let cc: CustomerController = <CustomerController>invocationCtx.target;
+      let whereBuilder = {};
+      if (invocationCtx.methodName === 'create') {
+        whereBuilder = { mobile: invocationCtx.args[0].mobile };
+
+      } else {
+        whereBuilder = {
+          and: [
+            { mobile: invocationCtx.args[1].mobile },
+            { id: { neq: invocationCtx.args[1].id } },
+          ],
+        };
+      }
+
+      const result = await cc.customerRepository.count(whereBuilder);
+      searchByMobile = result.count;
+
+      if (searchByMobile == 0) {
+
+        const result2 = await cc.serviceUserRepository.count(whereBuilder);
+        searchByMobile = result2.count;
+      }
     }
 
-    const searchByUsername = await uc.userRepository.count(whereBuilder);
 
-    if (searchByUsername.count > 0) {
-      throw new HttpErrors.UnprocessableEntity(`code:uniqueUsername`);
+
+    if (searchByMobile > 0) {
+      throw new HttpErrors.UnprocessableEntity(`code:uniqueMobile`);
     }
 
     const result = await next();

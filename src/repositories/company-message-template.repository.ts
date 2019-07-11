@@ -1,17 +1,17 @@
 import { DefaultCrudRepository } from '@loopback/repository';
-import { DealPlaceholder, DealPlaceholderRelations } from '../models';
+import { CompanyMessageTemplate, CompanyMessageTemplateRelations } from '../models';
 import { DbDataSource } from '../datasources';
 import { inject } from '@loopback/core';
 
-export class DealPlaceholderRepository extends DefaultCrudRepository<
-  DealPlaceholder,
-  typeof DealPlaceholder.prototype.id,
-  DealPlaceholderRelations
+export class CompanyMessageTemplateRepository extends DefaultCrudRepository<
+  CompanyMessageTemplate,
+  typeof CompanyMessageTemplate.prototype.id,
+  CompanyMessageTemplateRelations
   > {
   constructor(
     @inject('datasources.db') dataSource: DbDataSource,
   ) {
-    super(DealPlaceholder, dataSource);
+    super(CompanyMessageTemplate, dataSource);
   }
 
   async query(
@@ -19,7 +19,7 @@ export class DealPlaceholderRepository extends DefaultCrudRepository<
     params?: any,
     options?: any,
     getIndex?: number,
-  ): Promise<(DealPlaceholder & DealPlaceholderRelations)[]> {
+  ): Promise<(CompanyMessageTemplate & CompanyMessageTemplateRelations)[]> {
     return new Promise((resolve, reject) => {
       const connector = this.dataSource.connector!;
       connector.execute!(sql, params, options, (err: any, ...results: any) => {

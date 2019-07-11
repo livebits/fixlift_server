@@ -10,6 +10,8 @@ import { repository } from '@loopback/repository';
 import { PasswordHasher } from './hash.password.bcryptjs';
 import { PasswordHasherBindings } from '../keys';
 import { inject } from '@loopback/context';
+import { Role } from '../models';
+import { PermissionKey } from '../authorization';
 
 export class MyUserService implements UserService<User, Credentials> {
   constructor(

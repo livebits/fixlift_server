@@ -33,7 +33,8 @@
     "_start": "node .",
     "build:watch": "lb-tsc es2017 --outDir dist --watch",
     "start:dev": "nodemon --watch ./dist --inspect ./index.js",
-    "prepublishOnly": "npm run test"
+    "prepublishOnly": "npm run test",
+    "dev": "nodemon server.js"
   },
   "repository": {
     "type": "git"

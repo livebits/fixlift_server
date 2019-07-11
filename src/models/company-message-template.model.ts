@@ -1,9 +1,7 @@
 import { Entity, model, property } from '@loopback/repository';
-import { BaseEntity } from './base-entity.model';
 
-@model({ name: 'message_templates' })
-export class MessageTemplate extends Entity {
-
+@model({ name: 'company_message_templates' })
+export class CompanyMessageTemplate extends Entity {
   @property({
     type: 'number',
     id: true,
@@ -30,43 +28,28 @@ export class MessageTemplate extends Entity {
   modifiedOn?: Date;
 
   @property({
-    type: 'string',
+    type: 'number',
+    mysql: {
+      columnName: 'message_template_id',
+    },
   })
-  title: string;
+  messageTemplateId?: number;
 
   @property({
     type: 'number',
+    mysql: {
+      columnName: 'reminder_value',
+    },
   })
-  reminder?: number;
-
-  @property({
-    type: 'string',
-  })
-  reminderTimeType?: string;
+  reminderValue?: number;
 
   @property({
     type: 'string',
     mysql: {
-      columnName: 'property_model',
+      columnName: 'reminder_time_type_value',
     },
   })
-  propertyModel?: string;
-
-  @property({
-    type: 'string',
-    mysql: {
-      columnName: 'property_name',
-    },
-  })
-  propertyName?: string;
-
-  @property({
-    type: 'string',
-    mysql: {
-      columnName: 'property_title',
-    },
-  })
-  propertyTitle?: string;
+  reminderTimeTypeValue?: string;
 
   @property({
     type: 'string',
@@ -78,13 +61,22 @@ export class MessageTemplate extends Entity {
   })
   status?: boolean;
 
-  constructor(data?: Partial<MessageTemplate>) {
+  @property({
+    type: 'number',
+    mysql: {
+      columnName: 'company_user_id',
+    },
+  })
+  companyUserId?: number;
+
+
+  constructor(data?: Partial<CompanyMessageTemplate>) {
     super(data);
   }
 }
 
-export interface MessageTemplateRelations {
-
+export interface CompanyMessageTemplateRelations {
+  // describe navigational properties here
 }
 
-export type MessageTemplateWithRelations = MessageTemplate & MessageTemplateRelations;
+export type CompanyMessageTemplateWithRelations = CompanyMessageTemplate & CompanyMessageTemplateRelations;

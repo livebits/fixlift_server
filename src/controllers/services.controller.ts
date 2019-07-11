@@ -19,6 +19,7 @@ import {
 } from '@loopback/rest';
 import { Service, ServiceFilter } from '../models';
 import { ServiceRepository } from '../repositories';
+import { authenticate } from '@loopback/authentication';
 
 export class ServicesController {
   constructor(
@@ -152,6 +153,7 @@ export class ServicesController {
     await this.serviceRepository.deleteById(id);
   }
 
+  @authenticate('jwt')
   @post('/services/filter', {
     responses: {
       '200': {
@@ -162,13 +164,29 @@ export class ServicesController {
   })
   async filter(@requestBody() serviceFilter: ServiceFilter): Promise<any> {
 
-    // return await this.serviceRepository.create(service);
+    let where = '';
+    if (serviceFilter.status && serviceFilter.status !== "") {
+      // where += `WHERE s.status = '${serviceFilter.status}'`;
+    }
 
-    const sql = `SELECT s.*, d.*, l.*
+    if (where !== '') {
+      if (serviceFilter.dealContractNumber && serviceFilter.dealContractNumber !== "") {
+        where += ` AND d.contract_number = '${serviceFilter.dealContractNumber}'`;
+      }
+    } else {
+      if (serviceFilter.dealContractNumber && serviceFilter.dealContractNumber !== "") {
+        where += `WHERE d.contract_number = '${serviceFilter.dealContractNumber}'`;
+      }
+    }
+
+    const sql = `SELECT s.*, s.id AS service_id, d.*, d.id AS deal_id,
+      d.service_user_id as deal_service_user_id, l.*, l.id AS lift_id,
+      r.name AS region_name
       FROM services s
-      LEFT JOIN deal d ON d.id = s.deal_id
+      LEFT JOIN deals d ON d.id = s.deal_id
       LEFT JOIN lifts l ON d.id = l.deal_id
-      WHERE s.status = ${serviceFilter.status} AND d.contract_number = ${serviceFilter.dealContractNumber}
+      LEFT JOIN regions r ON d.building_region = r.id
+      ${where}
       order by s.id desc`;
 
     return await this.serviceRepository.query(sql);

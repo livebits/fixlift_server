@@ -1,5 +1,6 @@
 export * from './base-entity.model';
 export * from './customer.model';
+export * from './customer-payment.model';
 export * from './deal.model';
 export * from './service-user.model';
 export * from './lift.model';
@@ -39,3 +40,4 @@ export * from './user.model';
 export * from './role.model';
 export * from './user-role.model';
 export * from './lift-field-value.model';
+export * from './company-message-template.model';

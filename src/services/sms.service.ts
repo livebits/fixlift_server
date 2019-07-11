@@ -33,7 +33,7 @@ export class SMSService {
 		try {
 			var req = http.request(options, (response: any) => {
 
-				let chunks: [any];
+				let chunks = Array();
 				response.on("data", function (chunk: any) {
 					try {
 						chunks.push(chunk);
@@ -85,7 +85,7 @@ export class SMSService {
 		};
 		let req2 = http.request(option, function (res: any) {
 
-			let chunks2: [any];
+			let chunks2 = Array();
 			res.on("data", function (chunk: any) {
 				try {
 					chunks2.push(chunk);

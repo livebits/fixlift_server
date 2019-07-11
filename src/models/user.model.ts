@@ -12,12 +12,12 @@ import {
   RelationType,
   HasManyDefinition,
 } from '@loopback/repository';
-import {UserPermission} from '../authorization';
-import {BaseEntity} from './base-entity.model';
-import {Role, RoleWithRelations} from './role.model';
-import {UserRole} from './user-role.model';
-import {Relation, BelongsTo} from 'loopback-datasource-juggler';
-import {Company, CompanyWithRelations} from './company.model';
+import { UserPermission } from '../authorization';
+import { BaseEntity } from './base-entity.model';
+import { Role, RoleWithRelations } from './role.model';
+import { UserRole } from './user-role.model';
+import { Relation, BelongsTo } from 'loopback-datasource-juggler';
+import { Company, CompanyWithRelations } from './company.model';
 
 @model({
   name: 'users',
@@ -98,10 +98,19 @@ export class User extends Entity {
   })
   lastLogin?: string;
 
-  @hasMany(() => Role, {keyTo: 'user_id'})
+  @property({
+    type: 'boolean',
+    default: () => false,
+    mysql: {
+      columnName: 'super_admin',
+    },
+  })
+  superAdmin?: boolean;
+
+  @hasMany(() => Role, { keyTo: 'user_id' })
   roles: Role[];
 
-  @hasMany(() => Company, {keyTo: 'user_id', name: 'companies'})
+  @hasMany(() => Company, { keyTo: 'user_id', name: 'companies' })
   companies: Company[];
 
   constructor(data?: Partial<User>) {

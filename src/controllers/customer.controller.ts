@@ -16,27 +16,36 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
-import { Customer } from '../models';
-import { CustomerRepository } from '../repositories';
+import { Customer, Damage, Payment, WorkPayment, Deal } from '../models';
+import { CustomerRepository, DamageRepository, ServiceUserRepository } from '../repositories';
 import { AuthenticationBindings, UserProfile, authenticate, UserService, TokenService } from '@loopback/authentication';
-import { inject } from '@loopback/core';
+import { inject, intercept } from '@loopback/core';
 import { CustomerService } from '../services/customer-service';
 import { CustomerServiceBindings, SMSServiceBindings, TokenServiceBindings } from '../keys';
 import { SMSService } from '../services/sms.service';
+import { PaymentService } from '../services/payment.service';
+import { service } from 'loopback4-spring';
 
 export class CustomerController {
   constructor(
     @repository(CustomerRepository)
     public customerRepository: CustomerRepository,
+    @repository(ServiceUserRepository)
+    public serviceUserRepository: ServiceUserRepository,
+    @repository(DamageRepository)
+    public damageRepository: DamageRepository,
     @inject(CustomerServiceBindings.CUSTOMER_SERVICE)
     public customerService: CustomerService,
     @inject(SMSServiceBindings.SMS_SERVICE)
     private smsService: SMSService,
     @inject(TokenServiceBindings.TOKEN_SERVICE)
     public jwtService: TokenService,
+    @service(PaymentService)
+    private paymentService: PaymentService,
   ) { }
 
   @authenticate('jwt')
+  @intercept('UniqueMobile')
   @post('/customers', {
     responses: {
       '200': {
@@ -114,6 +123,8 @@ export class CustomerController {
     return await this.customerRepository.findById(id);
   }
 
+  @authenticate('jwt')
+  @intercept('UniqueMobile')
   @patch('/customers/{id}', {
     responses: {
       '204': {
@@ -154,7 +165,8 @@ export class CustomerController {
   }
 
   //app apis
-  @get('/customers/stats/{id}', {
+  @authenticate('jwt')
+  @get('/customers/stats', {
     responses: {
       '200': {
         description: 'Customer model instance',
@@ -162,12 +174,84 @@ export class CustomerController {
       },
     },
   })
-  async stats(@param.path.number('id') id: number): Promise<any> {
+  async stats(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile
+  ): Promise<any> {
 
-    const sql = `SELECT c.name, c.type, c.national_code AS nationalCode,
-      c.mobile, c.phone, c.birth_date AS birthDate, COALESCE(c.password, 0) as balance
+    const sql = `SELECT c.*, COALESCE(c.password, 0) as balance
       FROM customers c
-      WHERE c.id = ${id}`;
+      WHERE c.id = ${currentUser.id}`;
+
+    const customer = await this.customerRepository.query(sql);
+    return customer[0]
+  }
+
+  @authenticate('jwt')
+  @post('/customers/add-damage', {
+    responses: {
+      '200': {
+        description: 'Damage model instance',
+        content: { 'application/json': { schema: { 'x-ts-type': Damage } } },
+      },
+    },
+  })
+  async addDamage(
+    @requestBody() damage: Damage,
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile
+  ): Promise<Damage> {
+
+    damage.createdBy = "customer";
+    damage.creatorId = Number(currentUser.id);
+    return await this.damageRepository.create(damage);
+  }
+
+  @authenticate('jwt')
+  @post('/service-users/add-customer-payments', {
+    responses: {
+      '200': {
+        description: 'CustomerPayment model instance',
+        content: { 'application/json': { schema: { 'x-ts-type': Payment } } },
+      },
+    },
+  })
+  async createByServiceUser(
+    @requestBody() workPayment: WorkPayment,
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile
+  ): Promise<Payment> {
+    let customer = await this.customerRepository.findById(Number(currentUser.id));
+    return await this.paymentService.create(customer.companyUserId, workPayment, false);
+  }
+
+  @authenticate('jwt')
+  @get('/customers/deals', {
+    responses: {
+      '200': {
+        description: 'Array of Deal model instances',
+        content: {
+          'application/json': {
+            schema: { type: 'array', items: { 'x-ts-type': Deal } },
+          },
+        },
+      },
+    },
+  })
+  async getDeals(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile
+  ): Promise<any[]> {
+
+    const sql = `SELECT d.id, c.id AS customer_id, c.name AS customer_name, d.building_name, d.contract_number,
+      d.contract_finish_date, d.cost_per_service, d.full_deal_cost, d.service_day,
+      r.name AS region, su.name as service_user_name, su.id as service_user_id
+      FROM deals d
+      LEFT JOIN customers c ON c.id = d.customer_id
+      LEFT JOIN regions r ON r.id = d.building_region
+      LEFT JOIN service_users su ON d.service_user_id = su.id
+      WHERE d.company_user_id = c.company_user_id AND c.id = ${currentUser.id}
+      order by d.id desc`;
 
     return await this.customerRepository.query(sql);
   }

@@ -263,7 +263,7 @@ export class UserController {
   })
   async login(
     @requestBody(CredentialsRequestBody) credentials: Credentials,
-  ): Promise<{ token: string }> {
+  ): Promise<any> {
     // validateCredentials(credentials);
 
     // ensure the user exists, and the password is correct
@@ -275,7 +275,18 @@ export class UserController {
     // create a JSON Web Token based on the user profile
     const token = await this.jwtService.generateToken(userProfile);
 
-    return { token };
+    //get user role with permissions
+    const sql = `select u.super_admin as superAdmin ,r.name as role, r.permissions as permissions
+      from users u
+      left join user_roles ur on ur.user_id = u.id
+      left join roles r on r.id = ur.role_id
+      WHERE u.id = ${user.id}
+      order by u.id desc`;
+
+    let userWithRoles = await this.userRepository.query(sql);
+    let result = userWithRoles[0];
+
+    return { token, permissions: result };
   }
 
   @get('/users', {

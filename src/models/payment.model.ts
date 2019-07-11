@@ -52,6 +52,14 @@ export class Payment extends Entity {
 
   @property({
     type: 'string',
+    mysql: {
+      columnName: 'payment_date',
+    },
+  })
+  paymentDate?: string;
+
+  @property({
+    type: 'string',
   })
   status?: string;
 
