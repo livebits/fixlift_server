@@ -1,5 +1,6 @@
-import { Entity, model, property } from '@loopback/repository';
+import { Entity, model, property, belongsTo } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
+import { Segment } from './segment.model';
 
 @model({ name: 'damage_segments' })
 export class DamageSegment extends Entity {
@@ -37,13 +38,18 @@ export class DamageSegment extends Entity {
   })
   damageId?: number;
 
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'segment_id',
+  @belongsTo(
+    () => Segment,
+    { keyFrom: 'segmentId', name: 'segment' },
+    {
+      type: 'number',
+      name: 'segment_id',
+      mysql: {
+        columnName: 'segment_id',
+      },
     },
-  })
-  segmentId?: number;
+  )
+  segmentId: number;
 
   @property({
     type: 'number',
@@ -67,6 +73,8 @@ export class DamageSegment extends Entity {
     type: 'string',
   })
   status?: string;
+
+  segment?: Segment;
 
 
   constructor(data?: Partial<DamageSegment>) {

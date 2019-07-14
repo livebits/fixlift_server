@@ -1,6 +1,6 @@
 import { Entity, model, belongsTo, property } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
-import { Deal } from './deal.model';
+import { Deal, DealWithRelations } from './deal.model';
 
 @model({ name: 'insurances' })
 export class Insurance extends Entity {
@@ -87,7 +87,7 @@ export class Insurance extends Entity {
 }
 
 export interface InsuranceRelations {
-
+  deal?: DealWithRelations;
 }
 
 export type InsuranceWithRelations = Insurance & InsuranceRelations;

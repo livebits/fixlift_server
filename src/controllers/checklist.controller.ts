@@ -150,4 +150,34 @@ export class ChecklistController {
   async deleteById(@param.path.number('id') id: number): Promise<void> {
     await this.checklistRepository.deleteById(id);
   }
+
+  //App apis
+  @authenticate('jwt')
+  @get('/checklists/getCompanyChecklists/{company_id}', {
+    responses: {
+      '200': {
+        description: 'Array of Checklist model instances',
+        content: {
+          'application/json': {
+            schema: { type: 'array', items: { 'x-ts-type': Checklist } },
+          },
+        },
+      },
+    },
+  })
+  async getCompanyChecklists(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
+    @param.path.number('company_id') companyId: number
+  ): Promise<any> {
+
+    const sql = `select ch.id, ch.title as title, ch.priority as priority, chc.title as checklistCategory, chc.priority as checklistCategoryPriority
+      from checklists ch
+      left join checklist_categories chc on ch.checklist_category_id = chc.id
+      where ch.company_user_id = ${companyId}
+      order by ch.id desc`;
+
+
+    return await this.checklistRepository.query(sql);
+  }
 }

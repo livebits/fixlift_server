@@ -17,8 +17,8 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
-import { Damage, DamageFilter } from '../models';
-import { DamageRepository } from '../repositories';
+import { Damage, DamageFilter, Checklist } from '../models';
+import { DamageRepository, DealRepository, DamageChecklistRepository, ChecklistRepository, DamageSegmentRepository } from '../repositories';
 import { authenticate, AuthenticationBindings, UserProfile } from '@loopback/authentication';
 import { inject } from '@loopback/core';
 
@@ -26,6 +26,14 @@ export class DamagesController {
   constructor(
     @repository(DamageRepository)
     public damageRepository: DamageRepository,
+    @repository(DamageChecklistRepository)
+    public damageChecklistRepository: DamageChecklistRepository,
+    @repository(DamageSegmentRepository)
+    public damageSegmentRepository: DamageSegmentRepository,
+    @repository(DealRepository)
+    public dealRepository: DealRepository,
+    @repository(ChecklistRepository)
+    public checklistRepository: ChecklistRepository,
   ) { }
 
   @authenticate('jwt')
@@ -169,7 +177,7 @@ export class DamagesController {
       },
     },
   })
-  async filter(@requestBody() damageFilter: DamageFilter): Promise<any> {
+  async filter(@requestBody() damageFilter: Partial<Damage>): Promise<any> {
 
     let where = '';
     if (damageFilter.status && damageFilter.status !== "") {
@@ -177,12 +185,12 @@ export class DamagesController {
     }
 
     if (where !== '') {
-      if (damageFilter.dealContractNumber && damageFilter.dealContractNumber !== "") {
-        where += ` AND d.contract_number = '${damageFilter.dealContractNumber}'`;
+      if (damageFilter.dealId && damageFilter.dealId !== 0) {
+        where += ` AND d.id = '${damageFilter.dealId}'`;
       }
     } else {
-      if (damageFilter.dealContractNumber && damageFilter.dealContractNumber !== "") {
-        where += `WHERE d.contract_number = '${damageFilter.dealContractNumber}'`;
+      if (damageFilter.dealId && damageFilter.dealId !== 0) {
+        where += `WHERE d.id = '${damageFilter.dealId}'`;
       }
     }
 
@@ -195,9 +203,69 @@ export class DamagesController {
       LEFT JOIN regions r ON d.building_region = r.id
       ${where}
       order by dmg.id desc`;
-    console.log(sql);
-
 
     return await this.damageRepository.query(sql);
+  }
+
+  @authenticate('jwt')
+  @get('/damages/getDetail/{id}', {
+    responses: {
+      '200': {
+        description: 'Damage model instance',
+        content: { 'application/json': { schema: { 'x-ts-type': Damage } } },
+      },
+    },
+  })
+  async getDetail(
+    @param.path.number('id') id: number
+  ): Promise<Damage> {
+
+    let damage = await this.damageRepository.findById(id);
+    damage.deal = await this.damageRepository.deal(id);
+    damage.deal.lift = await this.dealRepository.lift(damage.deal.id).get();
+
+    if (damage.status == "done") {
+      let damageChecklists = await this.damageRepository.damageChecklists(damage.id).find();
+
+      //add checklist
+      await Promise.all(
+        damageChecklists.map(async dcl => {
+          try {
+            const sql = `SELECT c.id, c.title, c.priority, c.status, clc.title AS checkListCategoryTitle, clc.priority AS checkListCategoryPriority
+              FROM checklists c
+              LEFT JOIN checklist_categories clc ON c.checklist_category_id = checklist_categories.id
+              WHERE c.id = ${dcl.checklistId}
+              ORDER BY clc.priority ASC, c.priority ASC`;
+
+            let checklist = await this.checklistRepository.query(sql);
+            dcl.checklist = checklist[0];
+          } catch {
+
+          }
+        }),
+      );
+
+      damage.damageChecklists = damageChecklists;
+
+      //damage segment items
+      let damageSegments = await this.damageRepository.damageSegments(damage.id).find();
+      await Promise.all(
+        damageSegments.map(async ds => {
+          try {
+            ds.segment = await this.damageSegmentRepository.segment(ds.id);
+          } catch {
+
+          }
+        }),
+      );
+      damage.damageSegments = damageSegments;
+
+      //damage factor items
+      let damageFactors = await this.damageRepository.damageFactors(damage.id).find();
+      damage.damageFactors = damageFactors;
+
+    }
+
+    return damage;
   }
 }

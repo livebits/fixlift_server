@@ -15,9 +15,10 @@ import {
   put,
   del,
   requestBody,
+  getModelSchemaRef,
 } from '@loopback/rest';
-import { Customer, Damage, Payment, WorkPayment, Deal } from '../models';
-import { CustomerRepository, DamageRepository, ServiceUserRepository } from '../repositories';
+import { Customer, Damage, Payment, WorkPayment, Deal, Balance, CustomerWithRelations, CustomerRelations } from '../models';
+import { CustomerRepository, DamageRepository, ServiceUserRepository, DealRepository } from '../repositories';
 import { AuthenticationBindings, UserProfile, authenticate, UserService, TokenService } from '@loopback/authentication';
 import { inject, intercept } from '@loopback/core';
 import { CustomerService } from '../services/customer-service';
@@ -30,6 +31,8 @@ export class CustomerController {
   constructor(
     @repository(CustomerRepository)
     public customerRepository: CustomerRepository,
+    @repository(DealRepository)
+    public dealRepository: DealRepository,
     @repository(ServiceUserRepository)
     public serviceUserRepository: ServiceUserRepository,
     @repository(DamageRepository)
@@ -170,21 +173,27 @@ export class CustomerController {
     responses: {
       '200': {
         description: 'Customer model instance',
-        content: { 'application/json': { schema: { 'x-ts-type': Customer } } },
+        content: { 'application/json': { schema: getModelSchemaRef(Customer, { partial: true }), } },
       },
     },
   })
   async stats(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile
-  ): Promise<any> {
+  ): Promise<CustomerRelations> {
 
-    const sql = `SELECT c.*, COALESCE(c.password, 0) as balance
-      FROM customers c
-      WHERE c.id = ${currentUser.id}`;
+    // const sql = `SELECT c.*, COALESCE(c.password, 0) as balance
+    //   FROM customers c
+    //   WHERE c.id = ${currentUser.id}`;
 
-    const customer = await this.customerRepository.query(sql);
-    return customer[0]
+    let customer = await this.customerRepository.findById(Number(currentUser.id));
+
+    // let balance = new Balance();
+    // balance.balance = 0;
+
+    // customer.deals = [deal, deal];
+
+    return customer;
   }
 
   @authenticate('jwt')
@@ -204,11 +213,17 @@ export class CustomerController {
 
     damage.createdBy = "customer";
     damage.creatorId = Number(currentUser.id);
+    damage.createdOn = new Date();
+    damage.modifiedOn = new Date();
+
+    delete damage.id;
+    delete damage.serviceUserId;
+
     return await this.damageRepository.create(damage);
   }
 
   @authenticate('jwt')
-  @post('/service-users/add-customer-payments', {
+  @post('/customers/add-customer-payments', {
     responses: {
       '200': {
         description: 'CustomerPayment model instance',
@@ -221,6 +236,7 @@ export class CustomerController {
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile
   ): Promise<Payment> {
+
     let customer = await this.customerRepository.findById(Number(currentUser.id));
     return await this.paymentService.create(customer.companyUserId, workPayment, false);
   }
@@ -241,18 +257,32 @@ export class CustomerController {
   async getDeals(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile
-  ): Promise<any[]> {
+  ): Promise<Deal[]> {
 
-    const sql = `SELECT d.id, c.id AS customer_id, c.name AS customer_name, d.building_name, d.contract_number,
-      d.contract_finish_date, d.cost_per_service, d.full_deal_cost, d.service_day,
-      r.name AS region, su.name as service_user_name, su.id as service_user_id
-      FROM deals d
-      LEFT JOIN customers c ON c.id = d.customer_id
-      LEFT JOIN regions r ON r.id = d.building_region
-      LEFT JOIN service_users su ON d.service_user_id = su.id
-      WHERE d.company_user_id = c.company_user_id AND c.id = ${currentUser.id}
-      order by d.id desc`;
+    // const sql = `SELECT d.id, c.id AS customer_id, c.name AS customer_name, d.building_name, d.contract_number,
+    //   d.contract_finish_date, d.cost_per_service, d.full_deal_cost, d.service_day,
+    //   r.name AS region, su.name as service_user_name, su.id as service_user_id
+    //   FROM deals d
+    //   LEFT JOIN customers c ON c.id = d.customer_id
+    //   LEFT JOIN regions r ON r.id = d.building_region
+    //   LEFT JOIN service_users su ON d.service_user_id = su.id
+    //   WHERE d.company_user_id = c.company_user_id AND c.id = ${currentUser.id}
+    //   order by d.id desc`;
 
-    return await this.customerRepository.query(sql);
+    return await this.customerRepository.deals(Number(currentUser.id)).find();
+
+    // await Promise.all(
+    //   deals.map(async d => {
+    //     try {
+    //       let insurance = await this.dealRepository.insurance(d.id).get();
+    //       d.insurance = insurance;
+    //     } catch {
+
+    //     }
+    //   }),
+    // );
+    // console.log(deals);
+
+    // return deals;
   }
 }

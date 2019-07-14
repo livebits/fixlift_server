@@ -142,4 +142,27 @@ export class SegmentController {
   async deleteById(@param.path.number('id') id: number): Promise<void> {
     await this.segmentRepository.deleteById(id);
   }
+
+  //App apis
+  @authenticate('jwt')
+  @get('/segments/getCompanySegments/{company_id}', {
+    responses: {
+      '200': {
+        description: 'Array of Checklist model instances',
+        content: {
+          'application/json': {
+            schema: { type: 'array', items: { 'x-ts-type': Segment } },
+          },
+        },
+      },
+    },
+  })
+  async getCompanySegments(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
+    @param.path.number('company_id') companyId: number
+  ): Promise<Segment[]> {
+
+    return await this.segmentRepository.find({ where: { companyUserId: companyId } });
+  }
 }

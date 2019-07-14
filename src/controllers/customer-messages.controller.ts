@@ -166,7 +166,8 @@ export class CustomerMessagesController {
     currentUser: UserProfile,
   ): Promise<any> {
 
-    const sql = `SELECT m.*
+    const sql = `SELECT m.id, m.created_on as createdOn, m.title, m.body,
+      m.type, m.status
       FROM customer_messages cm
       LEFT JOIN messages m ON m.id = cm.message_id
       WHERE cm.customer_id = ${currentUser.id}

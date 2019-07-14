@@ -18,13 +18,21 @@ import {
   requestBody,
 } from '@loopback/rest';
 import { Service, ServiceFilter } from '../models';
-import { ServiceRepository } from '../repositories';
+import { ServiceRepository, DealRepository, ServiceChecklistRepository, ServiceSegmentRepository, ChecklistRepository } from '../repositories';
 import { authenticate } from '@loopback/authentication';
 
 export class ServicesController {
   constructor(
     @repository(ServiceRepository)
     public serviceRepository: ServiceRepository,
+    @repository(DealRepository)
+    public dealRepository: DealRepository,
+    @repository(ServiceChecklistRepository)
+    public serviceChecklistRepository: ServiceChecklistRepository,
+    @repository(ServiceSegmentRepository)
+    public serviceSegmentRepository: ServiceSegmentRepository,
+    @repository(ChecklistRepository)
+    public checklistRepository: ChecklistRepository,
   ) { }
 
   @post('/services', {
@@ -162,7 +170,7 @@ export class ServicesController {
       },
     },
   })
-  async filter(@requestBody() serviceFilter: ServiceFilter): Promise<any> {
+  async filter(@requestBody() serviceFilter: Partial<Service>): Promise<any> {
 
     let where = '';
     if (serviceFilter.status && serviceFilter.status !== "") {
@@ -170,12 +178,12 @@ export class ServicesController {
     }
 
     if (where !== '') {
-      if (serviceFilter.dealContractNumber && serviceFilter.dealContractNumber !== "") {
-        where += ` AND d.contract_number = '${serviceFilter.dealContractNumber}'`;
+      if (serviceFilter.dealId && serviceFilter.dealId !== 0) {
+        where += ` AND d.id = '${serviceFilter.dealId}'`;
       }
     } else {
-      if (serviceFilter.dealContractNumber && serviceFilter.dealContractNumber !== "") {
-        where += `WHERE d.contract_number = '${serviceFilter.dealContractNumber}'`;
+      if (serviceFilter.dealId && serviceFilter.dealId !== 0) {
+        where += `WHERE d.id = '${serviceFilter.dealId}'`;
       }
     }
 
@@ -190,5 +198,66 @@ export class ServicesController {
       order by s.id desc`;
 
     return await this.serviceRepository.query(sql);
+  }
+
+  @authenticate('jwt')
+  @get('/services/getDetail/{id}', {
+    responses: {
+      '200': {
+        description: 'Service model instance',
+        content: { 'application/json': { schema: { 'x-ts-type': Service } } },
+      },
+    },
+  })
+  async getDetail(
+    @param.path.number('id') id: number
+  ): Promise<Service> {
+
+    let service = await this.serviceRepository.findById(id);
+    service.deal = await this.serviceRepository.deal(id);
+    service.deal.lift = await this.dealRepository.lift(service.deal.id).get();
+
+    if (service.status == "done") {
+      let serviceChecklists = await this.serviceRepository.serviceChecklists(service.id).find();
+
+      //add checklist
+      await Promise.all(
+        serviceChecklists.map(async sc => {
+          try {
+            const sql = `SELECT c.id, c.title, c.priority, c.status, clc.title AS checkListCategoryTitle, clc.priority AS checkListCategoryPriority
+              FROM checklists c
+              LEFT JOIN checklist_categories clc ON c.checklist_category_id = checklist_categories.id
+              WHERE c.id = ${sc.checklistId}
+              ORDER BY clc.priority ASC, c.priority ASC`;
+
+            let checklist = await this.checklistRepository.query(sql);
+            sc.checklist = checklist[0];
+          } catch {
+
+          }
+        }),
+      );
+
+      service.serviceChecklists = serviceChecklists;
+
+      //service segment items
+      let serviceSegments = await this.serviceRepository.serviceSegments(service.id).find();
+      await Promise.all(
+        serviceSegments.map(async ss => {
+          try {
+            ss.segment = await this.serviceSegmentRepository.segment(ss.id);
+          } catch {
+
+          }
+        }),
+      );
+      service.serviceSegments = serviceSegments;
+
+      //service factor items
+      let serviceFactors = await this.serviceRepository.serviceFactors(service.id).find();
+      service.serviceFactors = serviceFactors;
+    }
+
+    return service;
   }
 }

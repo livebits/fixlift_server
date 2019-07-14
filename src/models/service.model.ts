@@ -1,6 +1,9 @@
-import { Entity, model, property, belongsTo } from '@loopback/repository';
+import { Entity, model, property, belongsTo, hasMany } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 import { Deal } from './deal.model';
+import { ServiceChecklist } from './service-checklist.model';
+import { ServiceSegment } from './service-segment.model';
+import { ServiceFactor } from './service-factor.model';
 
 @model({ name: 'services' })
 export class Service extends Entity {
@@ -114,7 +117,7 @@ export class Service extends Entity {
 
   @belongsTo(
     () => Deal,
-    { keyFrom: 'deal_id', name: 'deal' },
+    { keyFrom: 'dealId', name: 'deal' },
     {
       type: 'number',
       name: 'deal_id',
@@ -124,6 +127,17 @@ export class Service extends Entity {
     },
   )
   dealId?: number;
+
+  deal: Deal;
+
+  @hasMany(() => ServiceChecklist, { keyTo: 'serviceId' })
+  serviceChecklists: ServiceChecklist[];
+
+  @hasMany(() => ServiceSegment, { keyTo: 'serviceId' })
+  serviceSegments: ServiceSegment[];
+
+  @hasMany(() => ServiceFactor, { keyTo: 'serviceId' })
+  serviceFactors: ServiceFactor[];
 
   constructor(data?: Partial<Service>) {
     super(data);

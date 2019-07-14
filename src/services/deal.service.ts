@@ -266,7 +266,12 @@ export class DealService {
     lift.stopsCount = fulldeal.stopsCount;
     lift.nationalId = fulldeal.nationalId;
 
-    await this.liftRepository.updateById(fulldeal.liftId, lift, options);
+    if (fulldeal.liftId) {
+      await this.liftRepository.updateById(fulldeal.liftId, lift, options);
+    } else {
+      lift.dealId = fulldeal.id;
+      await this.liftRepository.create(lift, options);
+    }
 
     await Object.keys(fulldeal.field).forEach(async (key, index) => {
       let liftField = new LiftFieldValue();

@@ -16,8 +16,8 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
-import { Deal, FullDeal } from '../models';
-import { DealRepository } from '../repositories';
+import { Deal, FullDeal, Service } from '../models';
+import { DealRepository, LiftRepository } from '../repositories';
 import { authenticate, AuthenticationBindings, UserProfile } from '@loopback/authentication';
 import { DealService } from '../services/deal.service';
 import { service } from 'loopback4-spring';
@@ -27,6 +27,8 @@ export class DealController {
   constructor(
     @repository(DealRepository)
     public dealRepository: DealRepository,
+    @repository(LiftRepository)
+    public liftRepository: LiftRepository,
     @service(DealService)
     private dealService: DealService,
   ) { }
@@ -236,5 +238,50 @@ export class DealController {
       order by d.id desc`;
 
     return await this.dealRepository.query(sql);
+  }
+
+  @authenticate('jwt')
+  @get('/deals/getDetail/{id}', {
+    responses: {
+      '204': {
+        description: 'Deal model instance',
+        content: { 'application/json': { schema: { 'x-ts-type': Deal } } },
+      },
+    },
+  })
+  async get(@param.path.number('id') id: number): Promise<any> {
+
+    let deal = await this.dealRepository.findById(id);
+
+    let lift = await this.dealRepository.lift(deal.id).get();
+
+    try {
+      let insurance = await this.dealRepository.insurance(deal.id).get();
+      deal.insurance = insurance;
+    } catch {
+
+    }
+
+
+    let deviceType = await this.liftRepository.deviceType(lift.id);
+
+    lift.deviceType = deviceType;
+    deal.lift = lift;
+
+    return deal;
+  }
+
+  @authenticate('jwt')
+  @get('/deals/getServices/{dealId}', {
+    responses: {
+      '204': {
+        description: 'Deal model instance',
+        content: { 'application/json': { schema: { 'x-ts-type': Service } } },
+      },
+    },
+  })
+  async getServices(@param.path.number('dealId') dealId: number): Promise<Service[]> {
+
+    return await this.dealRepository.services(dealId).find();
   }
 }

@@ -1,5 +1,6 @@
 import { Entity, model, property } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
+import { Checklist } from './checklist.model';
 
 @model({ name: 'service_checklists' })
 export class ServiceChecklist extends Entity {
@@ -54,6 +55,8 @@ export class ServiceChecklist extends Entity {
     type: 'string',
   })
   description?: string;
+
+  checklist?: Checklist;
 
   constructor(data?: Partial<ServiceChecklist>) {
     super(data);

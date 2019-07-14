@@ -63,12 +63,12 @@
     "bcryptjs": "^2.4.3",
     "isemail": "^3.2.0",
     "jsonwebtoken": "^8.5.1",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.14",
     "loopback-connector-mysql": "^5.4.1",
-    "loopback4-authorization": "^2.2.0",
+    "loopback4-authorization": "^2.3.2",
     "loopback4-spring": "^1.0.9",
     "moment-jalaali": "^0.8.3",
-    "npm": "^6.9.2",
+    "npm": "^6.10.0",
     "passport": "^0.4.0",
     "passport-http": "^0.3.0",
     "pm2": "^3.5.1"
@@ -78,10 +78,10 @@
     "@loopback/testlab": "^1.6.3",
     "@loopback/tslint-config": "^2.1.0",
     "@types/bcryptjs": "^2.4.2",
-    "@types/node": "^10.14.10",
+    "@types/node": "^10.14.12",
     "@types/passport": "^1.0.0",
     "@types/passport-http": "^0.3.8",
     "tslint": "^5.18.0",
-    "typescript": "^3.5.2"
+    "typescript": "^3.5.3"
   }
 }

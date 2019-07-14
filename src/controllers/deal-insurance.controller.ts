@@ -18,7 +18,7 @@ import {
   Deal,
   Insurance,
 } from '../models';
-import {DealRepository} from '../repositories';
+import { DealRepository } from '../repositories';
 
 export class DealInsuranceController {
   constructor(
@@ -40,8 +40,8 @@ export class DealInsuranceController {
   async find(
     @param.path.number('id') id: number,
     @param.query.object('filter') filter?: Filter<Insurance>,
-  ): Promise<Insurance[]> {
-    return await this.dealRepository.insurances(id).find(filter);
+  ): Promise<Insurance> {
+    return await this.dealRepository.insurance(id).get();
   }
 
   @post('/deals/{id}/insurances', {
@@ -56,7 +56,7 @@ export class DealInsuranceController {
     @param.path.number('id') id: typeof Deal.prototype.id,
     @requestBody() insurance: Insurance,
   ): Promise<Insurance> {
-    return await this.dealRepository.insurances(id).create(insurance);
+    return await this.dealRepository.insurance(id).create(insurance);
   }
 
   @patch('/deals/{id}/insurances', {
@@ -72,7 +72,7 @@ export class DealInsuranceController {
     @requestBody() insurance: Partial<Insurance>,
     @param.query.object('where', getWhereSchemaFor(Insurance)) where?: Where<Insurance>,
   ): Promise<Count> {
-    return await this.dealRepository.insurances(id).patch(insurance, where);
+    return await this.dealRepository.insurance(id).patch(insurance, where);
   }
 
   @del('/deals/{id}/insurances', {
@@ -87,6 +87,6 @@ export class DealInsuranceController {
     @param.path.number('id') id: number,
     @param.query.object('where', getWhereSchemaFor(Insurance)) where?: Where<Insurance>,
   ): Promise<Count> {
-    return await this.dealRepository.insurances(id).delete(where);
+    return await this.dealRepository.insurance(id).delete(where);
   }
 }

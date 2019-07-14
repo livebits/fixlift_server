@@ -1,4 +1,6 @@
-import { Model, model, Entity, property } from '@loopback/repository';
+import { Model, model, Entity, property, belongsTo } from '@loopback/repository';
+import { Message } from './message.model';
+import { ServiceUser } from './service-user.model';
 
 @model({ name: 'service_user_messages' })
 export class ServiceUserMessage extends Entity {
@@ -10,20 +12,32 @@ export class ServiceUserMessage extends Entity {
   })
   id?: number;
 
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'service_user_id',
+  @belongsTo(
+    () => ServiceUser,
+    { keyFrom: 'serviceUserId', name: 'serviceUser' },
+    {
+      type: 'number',
+      index: true,
+      name: 'service_user_id',
+      mysql: {
+        columnName: 'service_user_id',
+      },
     },
-  })
+  )
   serviceUserId?: number;
 
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'message_id',
+  @belongsTo(
+    () => Message,
+    { keyFrom: 'message_id', name: 'message' },
+    {
+      type: 'number',
+      index: true,
+      name: 'message_id',
+      mysql: {
+        columnName: 'message_id',
+      },
     },
-  })
+  )
   messageId?: number;
 
 

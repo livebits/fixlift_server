@@ -1,4 +1,4 @@
-import { Entity, model, property, belongsTo, hasMany } from '@loopback/repository';
+import { Entity, model, property, belongsTo, hasMany, hasOne } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 import { Company } from './company.model';
 import { Deal } from './deal.model';
@@ -216,13 +216,22 @@ export class Customer extends Entity {
   @hasMany(() => Deal, { keyTo: 'customer_id' })
   deals: Deal[];
 
+  balance: Balance
+
   constructor(data?: Partial<Customer>) {
     super(data);
   }
 }
 
 export interface CustomerRelations {
-
+  balance: Balance
 }
 
 export type CustomerWithRelations = Customer & CustomerRelations;
+
+export class Balance {
+  @property({
+    type: 'number',
+  })
+  balance: number;
+}

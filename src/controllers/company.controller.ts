@@ -23,6 +23,7 @@ import {
   UserRole,
   UserWithRole,
   Role,
+  Customer,
 } from '../models';
 import {
   CompanyRepository,
@@ -30,16 +31,16 @@ import {
   UserRepository,
   UserRoleRepository,
 } from '../repositories';
-import {intercept, inject} from '@loopback/core';
+import { intercept, inject } from '@loopback/core';
 import {
   PasswordHasherBindings,
   TokenServiceBindings,
   UserServiceBindings,
 } from '../keys';
-import {PasswordHasher} from '../services/hash.password.bcryptjs';
-import {TokenService, UserService} from '@loopback/authentication';
-import {CompanyService} from '../services/company.service';
-import {service} from 'loopback4-spring';
+import { PasswordHasher } from '../services/hash.password.bcryptjs';
+import { TokenService, UserService, authenticate, AuthenticationBindings, UserProfile } from '@loopback/authentication';
+import { CompanyService } from '../services/company.service';
+import { service } from 'loopback4-spring';
 
 class CompanyWithUserAndRole {
   user: User;
@@ -62,13 +63,13 @@ export class CompanyController {
     public userService: UserService<User, Credentials>,
     @service(CompanyService)
     private companyService: CompanyService,
-  ) {}
+  ) { }
 
   @post('/companies', {
     responses: {
       '200': {
         description: 'Company model instance',
-        content: {'application/json': {schema: {'x-ts-type': Company}}},
+        content: { 'application/json': { schema: { 'x-ts-type': Company } } },
       },
     },
   })
@@ -81,7 +82,7 @@ export class CompanyController {
     responses: {
       '200': {
         description: 'Company model count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -98,7 +99,7 @@ export class CompanyController {
         description: 'Array of Company model instances',
         content: {
           'application/json': {
-            schema: {type: 'array', items: {'x-ts-type': Company}},
+            schema: { type: 'array', items: { 'x-ts-type': Company } },
           },
         },
       },
@@ -124,7 +125,7 @@ export class CompanyController {
     responses: {
       '200': {
         description: 'Company PATCH success count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -140,7 +141,7 @@ export class CompanyController {
     responses: {
       '200': {
         description: 'Company model instance',
-        content: {'application/json': {schema: {'x-ts-type': Company}}},
+        content: { 'application/json': { schema: { 'x-ts-type': Company } } },
       },
     },
   })
@@ -176,7 +177,7 @@ export class CompanyController {
     const userRole = new UserRole();
     userRole.userId = company.userId;
     userRole.roleId = company.role;
-    await this.userRoleRepository.deleteAll({userId: company.userId});
+    await this.userRoleRepository.deleteAll({ userId: company.userId });
     await this.userRoleRepository.create(userRole);
   }
 

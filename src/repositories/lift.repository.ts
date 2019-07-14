@@ -1,17 +1,22 @@
-import { DefaultCrudRepository } from '@loopback/repository';
-import { Lift, LiftRelations } from '../models';
+import { DefaultCrudRepository, repository, BelongsToAccessor } from '@loopback/repository';
+import { Lift, LiftRelations, DeviceType } from '../models';
 import { DbDataSource } from '../datasources';
-import { inject } from '@loopback/core';
+import { inject, Getter } from '@loopback/core';
+import { DeviceTypeRepository } from './device-type.repository';
 
 export class LiftRepository extends DefaultCrudRepository<
   Lift,
   typeof Lift.prototype.id,
   LiftRelations
   > {
+
+  public readonly deviceType: BelongsToAccessor<DeviceType, typeof Lift.prototype.id>;
+
   constructor(
-    @inject('datasources.db') dataSource: DbDataSource,
+    @inject('datasources.db') dataSource: DbDataSource, @repository.getter('DeviceTypeRepository') protected deviceTypeRepositoryGetter: Getter<DeviceTypeRepository>,
   ) {
     super(Lift, dataSource);
+    this.deviceType = this.createBelongsToAccessorFor('deviceType', deviceTypeRepositoryGetter);
   }
 
   async query(

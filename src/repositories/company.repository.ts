@@ -12,18 +12,18 @@ import {
   Customer,
   ServiceUser,
 } from '../models';
-import {DbDataSource} from '../datasources';
-import {inject, Getter} from '@loopback/core';
-import {UserRepository} from './user.repository';
-import {DealRepository} from './deal.repository';
-import {CustomerRepository} from './customer.repository';
-import {ServiceUserRepository} from './service-user.repository';
+import { DbDataSource } from '../datasources';
+import { inject, Getter } from '@loopback/core';
+import { UserRepository } from './user.repository';
+import { DealRepository } from './deal.repository';
+import { CustomerRepository } from './customer.repository';
+import { ServiceUserRepository } from './service-user.repository';
 
 export class CompanyRepository extends DefaultCrudRepository<
   Company,
   typeof Company.prototype.id,
   CompanyRelations
-> {
+  > {
   public readonly user: BelongsToAccessor<User, typeof Company.prototype.id>;
 
   public readonly deals: HasManyRepositoryFactory<

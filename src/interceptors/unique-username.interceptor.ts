@@ -45,7 +45,6 @@ export class UniqueUsernameInterceptor implements Provider<Interceptor> {
     // Add pre-invocation logic here
 
     let uc: UserController = <UserController>invocationCtx.target;
-    console.log(invocationCtx)
 
     let whereBuilder = {};
     if (invocationCtx.methodName === 'create') {

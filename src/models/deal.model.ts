@@ -2,10 +2,11 @@ import { Entity, model, property, belongsTo, hasMany, hasOne } from '@loopback/r
 import { BaseEntity } from './base-entity.model';
 import { Company } from './company.model';
 import { Damage } from './damage.model';
-import { Service } from './service.model';
+import { Service, ServiceWithRelations } from './service.model';
 import { ServiceUser } from './service-user.model';
 import { Customer } from './customer.model';
-import { Insurance } from './insurance.model';
+import { Insurance, InsuranceWithRelations } from './insurance.model';
+import { Lift, LiftWithRelations } from './lift.model';
 
 @model({ name: 'deals' })
 export class Deal extends Entity {
@@ -208,10 +209,10 @@ export class Deal extends Entity {
   )
   companyUserId?: number;
 
-  @hasMany(() => Damage, { keyTo: 'deal_id' })
+  @hasMany(() => Damage, { keyTo: 'dealId' })
   damages: Damage[];
 
-  @hasMany(() => Service, { keyTo: 'deal_id' })
+  @hasMany(() => Service, { keyTo: 'dealId' })
   services: Service[];
 
   @belongsTo(
@@ -240,8 +241,17 @@ export class Deal extends Entity {
   )
   customerId: number;
 
-  @hasOne(() => Insurance, { keyTo: 'deal_id' })
-  insurances: Insurance[];
+  @hasOne(() => Insurance, { keyTo: 'dealId' })
+  insurance?: Insurance;
+
+  @hasOne(() => Lift, { keyTo: 'dealId' })
+  lift?: Lift;
+
+  @property({
+    type: 'number',
+  })
+  company_user_id?: number;
+
 
   constructor(data?: Partial<Deal>) {
     super(data);
@@ -249,7 +259,9 @@ export class Deal extends Entity {
 }
 
 export interface DealRelations {
-
+  services: ServiceWithRelations[],
+  insurance: InsuranceWithRelations,
+  lift: LiftWithRelations,
 }
 
 export type DealWithRelations = Deal & DealRelations;

@@ -1,5 +1,7 @@
-import { Entity, model, property } from '@loopback/repository';
+import { Entity, model, property, belongsTo } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
+import { DeviceType, DeviceTypeWithRelations } from './device-type.model';
+import { Deal } from './deal.model';
 
 @model({ name: 'lifts' })
 export class Lift extends Entity {
@@ -50,12 +52,17 @@ export class Lift extends Entity {
   })
   stopsCount?: number;
 
-  @property({
-    type: 'string',
-    mysql: {
-      columnName: 'device_type_id',
+  @belongsTo(
+    () => DeviceType,
+    { keyFrom: 'deviceTypeId', name: 'deviceType' },
+    {
+      type: 'string',
+      name: 'device_type_id',
+      mysql: {
+        columnName: 'device_type_id',
+      },
     },
-  })
+  )
   deviceTypeId?: string;
 
   @property({
@@ -66,13 +73,20 @@ export class Lift extends Entity {
   })
   liftType?: string;
 
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'deal_id',
+  @belongsTo(
+    () => Deal,
+    { keyFrom: 'dealId', name: 'deal' },
+    {
+      type: 'number',
+      name: 'deal_id',
+      mysql: {
+        columnName: 'deal_id',
+      },
     },
-  })
+  )
   dealId?: number;
+
+  deviceType?: DeviceType;
 
 
   constructor(data?: Partial<Lift>) {
@@ -81,7 +95,7 @@ export class Lift extends Entity {
 }
 
 export interface LiftRelations {
-
+  deviceType?: DeviceTypeWithRelations
 }
 
 export type LiftWithRelations = Lift & LiftRelations;

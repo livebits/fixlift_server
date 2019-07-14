@@ -8,6 +8,7 @@ import {
 import {
   del,
   get,
+  getModelSchemaRef,
   getWhereSchemaFor,
   param,
   patch,
@@ -69,7 +70,14 @@ export class CompanyDealController {
   })
   async patch(
     @param.path.number('id') id: number,
-    @requestBody() deal: Partial<Deal>,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Deal, {partial: true}),
+        },
+      },
+    })
+    deal: Partial<Deal>,
     @param.query.object('where', getWhereSchemaFor(Deal)) where?: Where<Deal>,
   ): Promise<Count> {
     return await this.companyRepository.deals(id).patch(deal, where);

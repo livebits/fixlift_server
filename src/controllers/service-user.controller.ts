@@ -16,8 +16,8 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
-import { ServiceUser, Damage, Payment, WorkPayment, Deal } from '../models';
-import { ServiceUserRepository, DamageRepository, CustomerRepository } from '../repositories';
+import { ServiceUser, Damage, Payment, WorkPayment, Deal, Customer } from '../models';
+import { ServiceUserRepository, DamageRepository, CustomerRepository, DealRepository } from '../repositories';
 import { authenticate, AuthenticationBindings, UserProfile } from '@loopback/authentication';
 import { inject, intercept } from '@loopback/core';
 import { PaymentService } from '../services/payment.service';
@@ -29,6 +29,8 @@ export class ServiceUserController {
     public serviceUserRepository: ServiceUserRepository,
     @repository(CustomerRepository)
     public customerRepository: CustomerRepository,
+    @repository(DealRepository)
+    public dealRepository: DealRepository,
     @repository(DamageRepository)
     public damageRepository: DamageRepository,
     @service(PaymentService)
@@ -193,6 +195,7 @@ export class ServiceUserController {
     return await this.paymentService.create(serviceUser.companyUserId, workPayment, false);
   }
 
+  @authenticate('jwt')
   @get('/service-users/stats', {
     responses: {
       '200': {
@@ -204,14 +207,9 @@ export class ServiceUserController {
   async stats(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile
-  ): Promise<any> {
+  ): Promise<ServiceUser> {
 
-    const sql = `SELECT s.*, COALESCE(s.id, 0) as balance
-      FROM service_users s
-      WHERE s.id = ${currentUser.id}`;
-
-    const serviceUser = await this.serviceUserRepository.query(sql);
-    return serviceUser[0]
+    return await this.serviceUserRepository.findById(Number(currentUser.id));
   }
 
   @authenticate('jwt')
@@ -244,4 +242,50 @@ export class ServiceUserController {
 
     return await this.serviceUserRepository.query(sql);
   }
+
+  @authenticate('jwt')
+  @get('/service-users/getCustomers', {
+    responses: {
+      '200': {
+        description: 'Array of Customers model instances',
+        content: {
+          'application/json': {
+            schema: { type: 'array', items: { 'x-ts-type': Customer } },
+          },
+        },
+      },
+    },
+  })
+  async getCustomers(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile
+  ): Promise<Customer[]> {
+    // await this.companyRepository.find(filter);
+
+    let serviceUser = await this.serviceUserRepository.findById(Number(currentUser.id));
+    return await this.customerRepository.find({ where: { companyUserId: serviceUser.companyUserId } });
+  }
+
+  @authenticate('jwt')
+  @get('/service-users/getCompanyDeals', {
+    responses: {
+      '200': {
+        description: 'Array of Customers model instances',
+        content: {
+          'application/json': {
+            schema: { type: 'array', items: { 'x-ts-type': Customer } },
+          },
+        },
+      },
+    },
+  })
+  async getCompanyDeals(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile
+  ): Promise<Deal[]> {
+
+    let serviceUser = await this.serviceUserRepository.findById(Number(currentUser.id));
+    return await this.dealRepository.find({ where: { companyUserId: serviceUser.companyUserId } });
+  }
+
 }

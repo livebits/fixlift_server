@@ -1,6 +1,9 @@
-import { Entity, model, property, belongsTo } from '@loopback/repository';
+import { Entity, model, property, belongsTo, hasMany } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 import { Deal } from './deal.model';
+import { DamageChecklist } from './damage-checklist.model';
+import { DamageSegment } from './damage-segment.model';
+import { DamageFactor } from './damage-factor.model';
 
 @model({ name: 'damages' })
 export class Damage extends Entity {
@@ -153,6 +156,17 @@ export class Damage extends Entity {
     },
   )
   dealId: number;
+
+  deal: Deal;
+
+  @hasMany(() => DamageChecklist, { keyTo: 'damageId' })
+  damageChecklists: DamageChecklist[];
+
+  @hasMany(() => DamageSegment, { keyTo: 'damageId' })
+  damageSegments: DamageSegment[];
+
+  @hasMany(() => DamageFactor, { keyTo: 'damageId' })
+  damageFactors: DamageFactor[];
 
   constructor(data?: Partial<Damage>) {
     super(data);

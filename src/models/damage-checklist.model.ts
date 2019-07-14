@@ -1,5 +1,6 @@
-import { Entity, model, property } from '@loopback/repository';
+import { Entity, model, property, belongsTo } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
+import { Checklist } from './checklist.model';
 
 @model({ name: 'damage_checklists' })
 export class DamageChecklist extends Entity {
@@ -37,12 +38,17 @@ export class DamageChecklist extends Entity {
   })
   damageId?: number;
 
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'checklist_id',
+  @belongsTo(
+    () => Checklist,
+    { keyFrom: 'checklistId', name: 'checklist' },
+    {
+      type: 'number',
+      name: 'checklist_id',
+      mysql: {
+        columnName: 'checklist_id',
+      },
     },
-  })
+  )
   checklistId?: number;
 
   @property({
@@ -55,6 +61,7 @@ export class DamageChecklist extends Entity {
   })
   description?: string;
 
+  checklist?: Checklist;
 
   constructor(data?: Partial<DamageChecklist>) {
     super(data);
@@ -62,7 +69,7 @@ export class DamageChecklist extends Entity {
 }
 
 export interface DamageChecklistRelations {
-
+  checklist?: Checklist;
 }
 
 export type DamageChecklistWithRelations = DamageChecklist & DamageChecklistRelations;

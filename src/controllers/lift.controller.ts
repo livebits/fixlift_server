@@ -171,7 +171,7 @@ export class LiftController {
     // return await this.liftRepository.findById(id);
   }
 
-  @get('/lifts/get-device-fields/{device_type_id}', {
+  @get('/lifts/get-device-fields/{lift_id}', {
     responses: {
       '200': {
         description: 'Lift model instance',
@@ -179,14 +179,20 @@ export class LiftController {
       },
     },
   })
-  async getDeviceFields(@param.path.number('device_type_id') deviceTypeId: number): Promise<any> {
+  async getDeviceFields(@param.path.number('lift_id') liftId: number): Promise<any> {
 
     const sql = `SELECT lf.id, lf.title, lf.field_type, lf.priority, lfc.title as categoryTitle,
-      lfc.priority as categoryPriority, lfv.id as lift_field_value_id, lfv.value
+      lfc.priority as categoryPriority, lfvv.id as lift_field_value_id,
+      CASE WHEN lfvv.lift_id = l.id THEN lfvv.value ELSE '' END AS value
       FROM lift_fields lf
       LEFT JOIN lift_field_categories lfc ON lfc.id = lf.lift_field_category_id
-      LEFT JOIN lift_field_values lfv ON lfv.lift_field_id = lf.id
-      WHERE lfc.device_type_id = ${deviceTypeId}
+      LEFT JOIN (
+        SELECT lfv.id, lfv.lift_field_id, lfv.value, lfv.lift_id
+        FROM lift_field_values lfv
+        WHERE lfv.lift_id = ${liftId}
+      ) AS lfvv ON lfvv.lift_field_id = lf.id
+      LEFT JOIN lifts l ON l.id = ${liftId}
+      WHERE lfc.device_type_id = l.device_type_id
       ORDER BY lfc.priority ASC, lf.priority ASC`;
 
     return await this.liftRepository.query(sql);
