@@ -17,20 +17,22 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
-import {MessageTemplate} from '../models';
-import {MessageTemplateRepository} from '../repositories';
+import { MessageTemplate } from '../models';
+import { MessageTemplateRepository } from '../repositories';
+import { authenticate, AuthenticationBindings, UserProfile } from '@loopback/authentication';
+import { inject } from '@loopback/core';
 
 export class MessageTemplatesController {
   constructor(
     @repository(MessageTemplateRepository)
-    public messageTemplateRepository : MessageTemplateRepository,
-  ) {}
+    public messageTemplateRepository: MessageTemplateRepository,
+  ) { }
 
   @post('/message-templates', {
     responses: {
       '200': {
         description: 'MessageTemplate model instance',
-        content: {'application/json': {schema: {'x-ts-type': MessageTemplate}}},
+        content: { 'application/json': { schema: { 'x-ts-type': MessageTemplate } } },
       },
     },
   })
@@ -42,7 +44,7 @@ export class MessageTemplatesController {
     responses: {
       '200': {
         description: 'MessageTemplate model count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -52,21 +54,25 @@ export class MessageTemplatesController {
     return await this.messageTemplateRepository.count(where);
   }
 
+  @authenticate('jwt')
   @get('/message-templates', {
     responses: {
       '200': {
         description: 'Array of MessageTemplate model instances',
         content: {
           'application/json': {
-            schema: {type: 'array', items: {'x-ts-type': MessageTemplate}},
+            schema: { type: 'array', items: { 'x-ts-type': MessageTemplate } },
           },
         },
       },
     },
   })
   async find(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
     @param.query.object('filter', getFilterSchemaFor(MessageTemplate)) filter?: Filter<MessageTemplate>,
   ): Promise<MessageTemplate[]> {
+
     return await this.messageTemplateRepository.find(filter);
   }
 
@@ -74,7 +80,7 @@ export class MessageTemplatesController {
     responses: {
       '200': {
         description: 'MessageTemplate PATCH success count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -82,7 +88,7 @@ export class MessageTemplatesController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(MessageTemplate, {partial: true}),
+          schema: getModelSchemaRef(MessageTemplate, { partial: true }),
         },
       },
     })
@@ -96,7 +102,7 @@ export class MessageTemplatesController {
     responses: {
       '200': {
         description: 'MessageTemplate model instance',
-        content: {'application/json': {schema: {'x-ts-type': MessageTemplate}}},
+        content: { 'application/json': { schema: { 'x-ts-type': MessageTemplate } } },
       },
     },
   })
@@ -116,7 +122,7 @@ export class MessageTemplatesController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(MessageTemplate, {partial: true}),
+          schema: getModelSchemaRef(MessageTemplate, { partial: true }),
         },
       },
     })

@@ -59,6 +59,7 @@ export class ChecklistCategoryController {
     return await this.checklistCategoryRepository.count(where);
   }
 
+  @authenticate('jwt')
   @get('/checklist-categories', {
     responses: {
       '200': {
@@ -72,8 +73,21 @@ export class ChecklistCategoryController {
     },
   })
   async find(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
     @param.query.object('filter', getFilterSchemaFor(ChecklistCategory)) filter?: Filter<ChecklistCategory>,
   ): Promise<ChecklistCategory[]> {
+
+    if (filter !== undefined) {
+      if (filter.where !== undefined) {
+        filter.where = { and: [{ companyUserId: Number(currentUser.id) }, filter.where] };
+      } else {
+        filter.where = { and: [{ companyUserId: Number(currentUser.id) }] };
+      }
+    } else {
+      filter = { where: { and: [{ companyUserId: Number(currentUser.id) }] } };
+    }
+
     return await this.checklistCategoryRepository.find(filter);
   }
 

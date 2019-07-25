@@ -67,6 +67,7 @@
     "loopback-connector-mysql": "^5.4.1",
     "loopback4-authorization": "^2.3.2",
     "loopback4-spring": "^1.0.9",
+    "moment": "^2.24.0",
     "moment-jalaali": "^0.8.3",
     "npm": "^6.10.0",
     "passport": "^0.4.0",

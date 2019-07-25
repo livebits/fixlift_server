@@ -59,6 +59,7 @@ export class ChecklistController {
     return await this.checklistRepository.count(where);
   }
 
+  @authenticate('jwt')
   @get('/checklists', {
     responses: {
       '200': {
@@ -72,12 +73,15 @@ export class ChecklistController {
     },
   })
   async find(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
     @param.query.object('filter', getFilterSchemaFor(Checklist)) filter?: Filter<Checklist>,
   ): Promise<any> {
 
-    const sql = `select ch.id, ch.title as title, ch.priority as priority, chc.title as checklistCategory
+    const sql = `select ch.id, ch.title, ch.priority, chc.title as checklistCategory
       from checklists ch
       left join checklist_categories chc on ch.checklist_category_id = chc.id
+      WHERE ch.company_user_id = ${currentUser.id}
       order by ch.id desc`;
 
     return await this.checklistRepository.query(sql);
@@ -171,12 +175,11 @@ export class ChecklistController {
     @param.path.number('company_id') companyId: number
   ): Promise<any> {
 
-    const sql = `select ch.id, ch.title as title, ch.priority as priority, chc.title as checklistCategory, chc.priority as checklistCategoryPriority
+    const sql = `select ch.id, ch.title as title, ch.priority as priority, chc.title as checkListCategoryTitle, chc.priority as checkListCategoryPriority
       from checklists ch
       left join checklist_categories chc on ch.checklist_category_id = chc.id
       where ch.company_user_id = ${companyId}
-      order by ch.id desc`;
-
+      order by chc.priority ASC, ch.priority ASC`;
 
     return await this.checklistRepository.query(sql);
   }

@@ -7,6 +7,7 @@ import { ServiceUser } from './service-user.model';
 import { Customer } from './customer.model';
 import { Insurance, InsuranceWithRelations } from './insurance.model';
 import { Lift, LiftWithRelations } from './lift.model';
+import { Region } from './region.model';
 
 @model({ name: 'deals' })
 export class Deal extends Entity {
@@ -155,12 +156,17 @@ export class Deal extends Entity {
   })
   repairManId?: number;
 
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'building_region',
+  @belongsTo(
+    () => Region,
+    { keyFrom: 'buildingRegion', name: 'region' },
+    {
+      type: 'number',
+      name: 'building_region',
+      mysql: {
+        columnName: 'building_region',
+      },
     },
-  })
+  )
   buildingRegion?: number;
 
   @property({
@@ -252,6 +258,11 @@ export class Deal extends Entity {
   })
   company_user_id?: number;
 
+  customer?: Customer;
+
+  region?: Region;
+
+  serviceUser?: ServiceUser;
 
   constructor(data?: Partial<Deal>) {
     super(data);

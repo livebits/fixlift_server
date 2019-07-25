@@ -58,7 +58,7 @@ export class Checklist extends Entity {
   @property({
     type: 'boolean',
   })
-  status?: boolean;
+  status: boolean;
 
 
   constructor(data?: Partial<Checklist>) {

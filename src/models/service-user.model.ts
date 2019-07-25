@@ -1,6 +1,7 @@
-import { Entity, model, property, belongsTo } from '@loopback/repository';
+import { Entity, model, property, belongsTo, hasMany } from '@loopback/repository';
 import { BaseEntity } from './base-entity.model';
 import { Company } from './company.model';
+import { Damage } from './damage.model';
 
 @model({ name: 'service_users' })
 export class ServiceUser extends Entity {
@@ -120,6 +121,9 @@ export class ServiceUser extends Entity {
     },
   })
   lastLogin?: string;
+
+  @hasMany(() => Damage, { keyTo: 'serviceUserId' })
+  damages: Damage[];
 
   constructor(data?: Partial<ServiceUser>) {
     super(data);

@@ -1,5 +1,5 @@
 import { DefaultCrudRepository, repository, BelongsToAccessor, HasManyRepositoryFactory, Filter, Options, HasOneRepositoryFactory } from '@loopback/repository';
-import { Deal, DealRelations, Company, Damage, Service, ServiceUser, Customer, Insurance, Lift } from '../models';
+import { Deal, DealRelations, Company, Damage, Service, ServiceUser, Customer, Insurance, Lift, Region } from '../models';
 import { DbDataSource } from '../datasources';
 import { inject, Getter } from '@loopback/core';
 import { CompanyRepository } from './company.repository';
@@ -9,6 +9,7 @@ import { ServiceUserRepository } from './service-user.repository';
 import { CustomerRepository } from './customer.repository';
 import { InsuranceRepository } from './insurance.repository';
 import { LiftRepository } from './lift.repository';
+import { RegionRepository } from './region.repository';
 
 export class DealRepository extends DefaultCrudRepository<
   Deal,
@@ -26,6 +27,8 @@ export class DealRepository extends DefaultCrudRepository<
 
   public readonly customer: BelongsToAccessor<Customer, typeof Deal.prototype.id>;
 
+  public readonly region: BelongsToAccessor<Region, typeof Deal.prototype.id>;
+
   public readonly insurance: HasOneRepositoryFactory<Insurance, typeof Deal.prototype.id>;
 
   public readonly lift: HasOneRepositoryFactory<Lift, typeof Deal.prototype.id>;
@@ -39,6 +42,7 @@ export class DealRepository extends DefaultCrudRepository<
     @repository.getter('CustomerRepository') protected customerRepositoryGetter: Getter<CustomerRepository>,
     @repository.getter('InsuranceRepository') protected insuranceRepositoryGetter: Getter<InsuranceRepository>,
     @repository.getter('LiftRepository') protected liftRepositoryGetter: Getter<LiftRepository>,
+    @repository.getter('RegionRepository') protected regionRepositoryGetter: Getter<RegionRepository>,
   ) {
     super(Deal, dataSource);
     this.insurance = this.createHasOneRepositoryFactoryFor('insurance', insuranceRepositoryGetter);
@@ -48,6 +52,7 @@ export class DealRepository extends DefaultCrudRepository<
     this.services = this.createHasManyRepositoryFactoryFor('services', serviceRepositoryGetter);
     this.damages = this.createHasManyRepositoryFactoryFor('damages', damageRepositoryGetter);
     this.company = this.createBelongsToAccessorFor('company', companyRepositoryGetter);
+    this.region = this.createBelongsToAccessorFor('region', regionRepositoryGetter);
   }
 
   async findByRelations(

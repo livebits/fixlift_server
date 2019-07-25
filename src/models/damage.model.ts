@@ -4,6 +4,9 @@ import { Deal } from './deal.model';
 import { DamageChecklist } from './damage-checklist.model';
 import { DamageSegment } from './damage-segment.model';
 import { DamageFactor } from './damage-factor.model';
+import { ServiceUser } from './service-user.model';
+import { Checklist } from './checklist.model';
+import { Segment, CustomSegment } from './segment.model';
 
 @model({ name: 'damages' })
 export class Damage extends Entity {
@@ -33,12 +36,17 @@ export class Damage extends Entity {
   })
   modifiedOn?: Date;
 
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'service_user_id',
+  @belongsTo(
+    () => ServiceUser,
+    { keyFrom: 'service_user_id', name: 'serviceUser' },
+    {
+      type: 'number',
+      name: 'service_user_id',
+      mysql: {
+        columnName: 'service_user_id',
+      },
     },
-  })
+  )
   serviceUserId?: number;
 
   @property({
@@ -159,8 +167,16 @@ export class Damage extends Entity {
 
   deal: Deal;
 
+  serviceUser: ServiceUser;
+
   @hasMany(() => DamageChecklist, { keyTo: 'damageId' })
   damageChecklists: DamageChecklist[];
+
+  @hasMany(() => Checklist)
+  checklists: Checklist[];
+
+  @hasMany(() => CustomSegment)
+  segments: CustomSegment[];
 
   @hasMany(() => DamageSegment, { keyTo: 'damageId' })
   damageSegments: DamageSegment[];
@@ -179,11 +195,27 @@ export interface DamageRelations {
 
 export type DamageWithRelations = Damage & DamageRelations;
 
-export class DamageFilter extends Damage {
+export class DamageFilter {
+
+  @property({
+    type: 'number',
+  })
+  dealId?: number;
 
   @property({
     type: 'string',
   })
-  dealContractNumber?: string;
+  status?: string;
+
+  @property({
+    type: 'string',
+  })
+  date?: string;
+
+  @property({
+    type: 'string',
+    required: true
+  })
+  appType?: string;
 
 }

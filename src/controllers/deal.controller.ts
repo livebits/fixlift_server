@@ -4,6 +4,8 @@ import {
   Filter,
   repository,
   Where,
+  Inclusion,
+  Condition,
 } from '@loopback/repository';
 import {
   post,
@@ -16,7 +18,7 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
-import { Deal, FullDeal, Service } from '../models';
+import { Deal, FullDeal, Service, Damage } from '../models';
 import { DealRepository, LiftRepository } from '../repositories';
 import { authenticate, AuthenticationBindings, UserProfile } from '@loopback/authentication';
 import { DealService } from '../services/deal.service';
@@ -68,6 +70,133 @@ export class DealController {
   }
 
   @authenticate('jwt')
+  @get('/deals/getByDetail', {
+    responses: {
+      '200': {
+        description: 'Array of Deal model instances',
+        content: {
+          'application/json': {
+            schema: { type: 'array', items: { 'x-ts-type': Deal } },
+          },
+        },
+      },
+    },
+  })
+  async getByDetail(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
+    @param.query.object('filter', getFilterSchemaFor(Deal)) filter: Filter<Deal>,
+  ): Promise<any[]> {
+    let now = new Date();
+
+    let cloneFilter = Object.assign({}, filter);
+    if (filter !== undefined) {
+      if (filter.where !== undefined) {
+
+        let myFilter = {};
+
+        let dealFilter: { buildingName: string, dealType: string } = <{ buildingName: string, dealType: string }>filter.where;
+        if (dealFilter.buildingName != null) {
+          myFilter = { ...myFilter, ...{ or: [{ buildingName: { like: dealFilter.buildingName } }, { contractNumber: { like: dealFilter.buildingName } }] } }
+        }
+
+        if (dealFilter.dealType != null) {
+          let oneMonthLater = now;
+          oneMonthLater.setMonth(now.getMonth() + 1);
+          now = new Date();
+
+          switch (dealFilter.dealType) {
+            case 'all':
+            case '':
+              myFilter = { ...myFilter, ...{ contractFinishDate: { gte: now.toISOString() } } }
+              break;
+            case 'expiredDeals':
+              myFilter = { ...myFilter, ...{ contractFinishDate: { lt: oneMonthLater.toISOString() } } }
+              break;
+            default:
+              break;
+          }
+
+        }
+        filter.where = { ...filter.where, ...myFilter }
+
+        filter.where = { and: [{ companyUserId: Number(currentUser.id) }, filter.where] };
+      } else {
+        filter.where = { and: [{ companyUserId: Number(currentUser.id) }, { contractFinishDate: { gte: now.toISOString() } }] };
+      }
+    } else {
+      filter = { where: { and: [{ companyUserId: Number(currentUser.id) }, { contractFinishDate: { gte: now.toISOString() } }] } };
+    }
+
+    let deals = await this.dealRepository.find(filter);
+    let applyInsuarnceFilter = false;
+    await Promise.all(
+      deals.map(async d => {
+        try {
+
+          let customer = await this.dealRepository.customer(d.id);
+          d.customer = customer;
+
+          let whereFilter = {};
+          if (cloneFilter !== undefined && cloneFilter.where !== undefined) {
+
+            let queryFilter: { buildingName: string, dealType: string } = <{ buildingName: string, dealType: string }>cloneFilter.where;
+            if (queryFilter.dealType != null && queryFilter.dealType == "expiredInsurances") {
+              now = new Date();
+              let oneMonthLater = now;
+              applyInsuarnceFilter = true;
+              oneMonthLater.setMonth(now.getMonth() + 1);
+              whereFilter = {
+                where: {
+                  finishDate: { lt: oneMonthLater.toISOString() }
+                }
+              }
+            }
+
+          }
+
+
+          let insurance = await this.dealRepository.insurance(d.id).get(whereFilter);
+          d.insurance = insurance;
+
+          let region = await this.dealRepository.region(d.id);
+          d.region = region;
+
+          let serviceUser = await this.dealRepository.serviceUser(d.id);
+          d.serviceUser = serviceUser;
+        } catch {
+
+        }
+      }),
+    );
+
+    if (applyInsuarnceFilter) {
+      let result: any[] = [];
+      deals.map(d => {
+        if (applyInsuarnceFilter && d.insurance !== undefined) {
+          result.push(d);
+        }
+      });
+
+      return result;
+    } else {
+      return deals;
+    }
+
+
+    // const sql = `SELECT d.id, c.id AS customer_id, c.name AS customer_name, d.building_name, d.contract_number,
+    //   d.contract_finish_date, d.cost_per_service, d.full_deal_cost, d.service_day,
+    //   r.name AS region, su.name as service_user_name, su.id as service_user_id
+    //   FROM deals d
+    //   LEFT JOIN customers c ON c.id = d.customer_id
+    //   LEFT JOIN regions r ON r.id = d.building_region
+    //   LEFT JOIN service_users su ON d.service_user_id = su.id
+    //   order by d.id desc`;
+
+    // return await this.dealRepository.query(sql);
+  }
+
+  @authenticate('jwt')
   @get('/deals', {
     responses: {
       '200': {
@@ -83,20 +212,24 @@ export class DealController {
   async find(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile,
-    @param.query.object('filter', getFilterSchemaFor(Deal)) filter?: Filter<Deal>,
-  ): Promise<any[]> {
-    // return await this.dealRepository.find(filter);
+    @param.query.object('filter', getFilterSchemaFor(Deal)) filter: Filter<Deal>,
+  ): Promise<{ data: Deal[], total: number }> {
+    let now = new Date();
 
-    const sql = `SELECT d.id, c.id AS customer_id, c.name AS customer_name, d.building_name, d.contract_number,
-      d.contract_finish_date, d.cost_per_service, d.full_deal_cost, d.service_day,
-      r.name AS region, su.name as service_user_name, su.id as service_user_id
-      FROM deals d
-      LEFT JOIN customers c ON c.id = d.customer_id
-      LEFT JOIN regions r ON r.id = d.building_region
-      LEFT JOIN service_users su ON d.service_user_id = su.id
-      order by d.id desc`;
+    if (filter !== undefined) {
+      if (filter.where !== undefined) {
+        filter.where = { and: [{ companyUserId: Number(currentUser.id) }, { contractFinishDate: { gte: now.toISOString() } }, filter.where] };
+      } else {
+        filter.where = { and: [{ companyUserId: Number(currentUser.id) }, { contractFinishDate: { gte: now.toISOString() } }] };
+      }
+    } else {
+      filter = { where: { and: [{ companyUserId: Number(currentUser.id) }, { contractFinishDate: { gte: now.toISOString() } }] } };
+    }
 
-    return await this.dealRepository.query(sql);
+    let deals = await this.dealRepository.find(filter);
+    let total = await this.dealRepository.count(filter.where);
+
+    return { data: deals, total: total.count }
   }
 
   @patch('/deals', {
@@ -226,18 +359,45 @@ export class DealController {
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile,
     @param.query.object('filter', getFilterSchemaFor(Deal)) filter?: Filter<Deal>,
-  ): Promise<any[]> {
+  ): Promise<{ data: Deal[], total: number }> {
 
-    const sql = `SELECT d.id, c.id AS customer_id, c.name AS customer_name, d.building_name, d.contract_number,
-      d.contract_finish_date, d.cost_per_service, d.full_deal_cost, d.service_day,
-      r.name AS region, su.name as service_user_name, su.id as service_user_id
-      FROM deals d
-      LEFT JOIN customers c ON c.id = d.customer_id
-      LEFT JOIN regions r ON r.id = d.building_region
-      LEFT JOIN service_users su ON d.service_user_id = su.id
-      order by d.id desc`;
+    let now = new Date();
+    let deals = await this.dealRepository.find({ where: { and: [{ companyUserId: Number(currentUser.id) }, { contractFinishDate: { lt: now.toISOString() } }] } });
+    await Promise.all(
+      deals.map(async d => {
+        try {
 
-    return await this.dealRepository.query(sql);
+          let customer = await this.dealRepository.customer(d.id);
+          d.customer = customer;
+
+          let insurance = await this.dealRepository.insurance(d.id).get();
+          d.insurance = insurance;
+
+          let region = await this.dealRepository.region(d.id);
+          d.region = region;
+
+          let serviceUser = await this.dealRepository.serviceUser(d.id);
+          d.serviceUser = serviceUser;
+        } catch {
+
+        }
+      }),
+    );
+
+    let total = await this.dealRepository.count(filter ? filter.where : {});
+
+    return { data: deals, total: total.count }
+
+    // const sql = `SELECT d.id, c.id AS customer_id, c.name AS customer_name, d.building_name, d.contract_number,
+    //   d.contract_finish_date, d.cost_per_service, d.full_deal_cost, d.service_day,
+    //   r.name AS region, su.name as service_user_name, su.id as service_user_id
+    //   FROM deals d
+    //   LEFT JOIN customers c ON c.id = d.customer_id
+    //   LEFT JOIN regions r ON r.id = d.building_region
+    //   LEFT JOIN service_users su ON d.service_user_id = su.id
+    //   order by d.id desc`;
+
+    // return await this.dealRepository.query(sql);
   }
 
   @authenticate('jwt')
@@ -274,7 +434,7 @@ export class DealController {
   @authenticate('jwt')
   @get('/deals/getServices/{dealId}', {
     responses: {
-      '204': {
+      '200': {
         description: 'Deal model instance',
         content: { 'application/json': { schema: { 'x-ts-type': Service } } },
       },
@@ -284,4 +444,84 @@ export class DealController {
 
     return await this.dealRepository.services(dealId).find();
   }
+
+  @authenticate('jwt')
+  @get('/deals/getUndoneServices/{dealId}', {
+    responses: {
+      '200': {
+        description: 'Deal model instance',
+        content: { 'application/json': { schema: { 'x-ts-type': Service } } },
+      },
+    },
+  })
+  async getUndoneServices(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
+    @param.path.number('dealId') dealId: number,
+    @param.query.object('filter', getFilterSchemaFor(Service)) filter: Filter<Service>,
+  ): Promise<Service[]> {
+
+    let now = new Date();
+
+    filter = <Filter<Service>>{
+      where:
+      {
+        and:
+          [
+            {
+              or: [
+                { status: { eq: "undone" } },
+                { status: { eq: "submitted" } },
+                { status: { eq: null } }
+              ]
+            },
+            {
+              serviceUserId: Number(currentUser.id)
+            },
+            {
+              time: { lte: now }
+            }
+          ]
+      }
+    };
+    return await this.dealRepository.services(dealId).find(filter);
+  }
+
+  @authenticate('jwt')
+  @get('/deals/getUndoneDamages/{dealId}', {
+    responses: {
+      '200': {
+        description: 'Deal model instance',
+        content: { 'application/json': { schema: { 'x-ts-type': Service } } },
+      },
+    },
+  })
+  async getUndoneDamages(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
+    @param.path.number('dealId') dealId: number,
+    @param.query.object('filter', getFilterSchemaFor(Damage)) filter: Filter<Damage>,
+  ): Promise<Damage[]> {
+
+    filter = <Filter<Damage>>{
+      where:
+      {
+        and:
+          [
+            {
+              or: [
+                { status: { eq: "undone" } },
+                { status: { eq: "submitted" } },
+                { status: { eq: null } }
+              ]
+            },
+            {
+              serviceUserId: Number(currentUser.id)
+            }
+          ]
+      }
+    };
+    return await this.dealRepository.damages(dealId).find(filter);
+  }
+
 }

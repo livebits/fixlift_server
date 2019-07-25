@@ -70,6 +70,7 @@ export class ServiceUserController {
     return await this.serviceUserRepository.count(where);
   }
 
+  @authenticate('jwt')
   @get('/service-users', {
     responses: {
       '200': {
@@ -83,8 +84,21 @@ export class ServiceUserController {
     },
   })
   async find(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
     @param.query.object('filter', getFilterSchemaFor(ServiceUser)) filter?: Filter<ServiceUser>,
   ): Promise<ServiceUser[]> {
+
+    if (filter !== undefined) {
+      if (filter.where !== undefined) {
+        filter.where = { and: [{ companyUserId: Number(currentUser.id) }, filter.where] };
+      } else {
+        filter.where = { and: [{ companyUserId: Number(currentUser.id) }] };
+      }
+    } else {
+      filter = { where: { and: [{ companyUserId: Number(currentUser.id) }] } };
+    }
+
     return await this.serviceUserRepository.find(filter);
   }
 

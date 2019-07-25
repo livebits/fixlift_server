@@ -74,8 +74,21 @@ export class RegionController {
     },
   })
   async find(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
     @param.query.object('filter', getFilterSchemaFor(Region)) filter?: Filter<Region>,
   ): Promise<Region[]> {
+
+    if (filter !== undefined) {
+      if (filter.where !== undefined) {
+        filter.where = { and: [{ companyUserId: Number(currentUser.id) }, filter.where] };
+      } else {
+        filter.where = { and: [{ companyUserId: Number(currentUser.id) }] };
+      }
+    } else {
+      filter = { where: { and: [{ companyUserId: Number(currentUser.id) }] } };
+    }
+
     return await this.regionRepository.find(filter);
   }
 

@@ -4,6 +4,9 @@ import { Deal } from './deal.model';
 import { ServiceChecklist } from './service-checklist.model';
 import { ServiceSegment } from './service-segment.model';
 import { ServiceFactor } from './service-factor.model';
+import { Checklist } from './checklist.model';
+import { CustomSegment } from './segment.model';
+import { ServiceUser } from './service-user.model';
 
 @model({ name: 'services' })
 export class Service extends Entity {
@@ -33,12 +36,17 @@ export class Service extends Entity {
   })
   modifiedOn?: Date;
 
-  @property({
-    type: 'number',
-    mysql: {
-      columnName: 'service_user_id',
+  @belongsTo(
+    () => Deal,
+    { keyFrom: 'serviceUserId', name: 'serviceUser' },
+    {
+      type: 'number',
+      name: 'service_user_id',
+      mysql: {
+        columnName: 'service_user_id',
+      },
     },
-  })
+  )
   serviceUserId?: number;
 
   @property({
@@ -130,6 +138,14 @@ export class Service extends Entity {
 
   deal: Deal;
 
+  serviceUser: ServiceUser;
+
+  @hasMany(() => Checklist)
+  checklists: Checklist[];
+
+  @hasMany(() => CustomSegment)
+  segments: CustomSegment[];
+
   @hasMany(() => ServiceChecklist, { keyTo: 'serviceId' })
   serviceChecklists: ServiceChecklist[];
 
@@ -151,11 +167,27 @@ export interface ServiceRelations {
 export type ServiceWithRelations = Service & ServiceRelations;
 
 
-export class ServiceFilter extends Service {
+export class ServiceFilter {
+
+  @property({
+    type: 'number',
+  })
+  dealId?: number;
 
   @property({
     type: 'string',
   })
-  dealContractNumber?: string;
+  status?: string;
+
+  @property({
+    type: 'string',
+  })
+  date?: string;
+
+  @property({
+    type: 'string',
+    required: true
+  })
+  appType?: string;
 
 }

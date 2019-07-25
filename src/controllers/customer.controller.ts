@@ -18,7 +18,7 @@ import {
   getModelSchemaRef,
 } from '@loopback/rest';
 import { Customer, Damage, Payment, WorkPayment, Deal, Balance, CustomerWithRelations, CustomerRelations } from '../models';
-import { CustomerRepository, DamageRepository, ServiceUserRepository, DealRepository } from '../repositories';
+import { CustomerRepository, DamageRepository, ServiceUserRepository, DealRepository, LiftRepository } from '../repositories';
 import { AuthenticationBindings, UserProfile, authenticate, UserService, TokenService } from '@loopback/authentication';
 import { inject, intercept } from '@loopback/core';
 import { CustomerService } from '../services/customer-service';
@@ -33,6 +33,8 @@ export class CustomerController {
     public customerRepository: CustomerRepository,
     @repository(DealRepository)
     public dealRepository: DealRepository,
+    @repository(LiftRepository)
+    public liftRepository: LiftRepository,
     @repository(ServiceUserRepository)
     public serviceUserRepository: ServiceUserRepository,
     @repository(DamageRepository)
@@ -81,6 +83,7 @@ export class CustomerController {
     return await this.customerRepository.count(where);
   }
 
+  @authenticate('jwt')
   @get('/customers', {
     responses: {
       '200': {
@@ -94,9 +97,11 @@ export class CustomerController {
     },
   })
   async find(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
     @param.query.object('filter', getFilterSchemaFor(Customer)) filter?: Filter<Customer>,
   ): Promise<Customer[]> {
-    return await this.customerRepository.find(filter);
+    return await this.customerRepository.find({ where: { companyUserId: Number(currentUser.id) } });
   }
 
   @patch('/customers', {
@@ -269,20 +274,23 @@ export class CustomerController {
     //   WHERE d.company_user_id = c.company_user_id AND c.id = ${currentUser.id}
     //   order by d.id desc`;
 
-    return await this.customerRepository.deals(Number(currentUser.id)).find();
+    let deals = await this.customerRepository.deals(Number(currentUser.id)).find();
 
-    // await Promise.all(
-    //   deals.map(async d => {
-    //     try {
-    //       let insurance = await this.dealRepository.insurance(d.id).get();
-    //       d.insurance = insurance;
-    //     } catch {
+    await Promise.all(
+      deals.map(async d => {
+        try {
+          let lift = await this.dealRepository.lift(d.id).get();
+          let deviceType = await this.liftRepository.deviceType(lift.id);
 
-    //     }
-    //   }),
-    // );
+          d.lift = lift;
+          d.lift.deviceType = deviceType;
+        } catch {
+
+        }
+      }),
+    );
     // console.log(deals);
 
-    // return deals;
+    return deals;
   }
 }

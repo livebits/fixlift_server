@@ -52,9 +52,9 @@ export class DamageChecklist extends Entity {
   checklistId?: number;
 
   @property({
-    type: 'string',
+    type: 'boolean',
   })
-  status?: string;
+  status: boolean;
 
   @property({
     type: 'string',

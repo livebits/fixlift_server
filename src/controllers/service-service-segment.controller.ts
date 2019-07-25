@@ -19,7 +19,7 @@ import {
   Service,
   ServiceSegment,
 } from '../models';
-import {ServiceRepository} from '../repositories';
+import { ServiceRepository } from '../repositories';
 
 export class ServiceServiceSegmentController {
   constructor(
@@ -45,20 +45,20 @@ export class ServiceServiceSegmentController {
     return await this.serviceRepository.serviceSegments(id).find(filter);
   }
 
-  @post('/services/{id}/service-segments', {
-    responses: {
-      '200': {
-        description: 'Service model instance',
-        content: { 'application/json': { schema: { 'x-ts-type': ServiceSegment } } },
-      },
-    },
-  })
-  async create(
-    @param.path.number('id') id: typeof Service.prototype.id,
-    @requestBody() serviceSegment: ServiceSegment,
-  ): Promise<ServiceSegment> {
-    return await this.serviceRepository.serviceSegments(id).create(serviceSegment);
-  }
+  // @post('/services/{id}/service-segments', {
+  //   responses: {
+  //     '200': {
+  //       description: 'Service model instance',
+  //       content: { 'application/json': { schema: { 'x-ts-type': ServiceSegment } } },
+  //     },
+  //   },
+  // })
+  // async create(
+  //   @param.path.number('id') id: typeof Service.prototype.id,
+  //   @requestBody() serviceSegment: ServiceSegment,
+  // ): Promise<ServiceSegment> {
+  //   return await this.serviceRepository.serviceSegments(id).create(serviceSegment);
+  // }
 
   @patch('/services/{id}/service-segments', {
     responses: {
@@ -73,7 +73,7 @@ export class ServiceServiceSegmentController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(ServiceSegment, {partial: true}),
+          schema: getModelSchemaRef(ServiceSegment, { partial: true }),
         },
       },
     })
@@ -83,18 +83,18 @@ export class ServiceServiceSegmentController {
     return await this.serviceRepository.serviceSegments(id).patch(serviceSegment, where);
   }
 
-  @del('/services/{id}/service-segments', {
-    responses: {
-      '200': {
-        description: 'Service.ServiceSegment DELETE success count',
-        content: { 'application/json': { schema: CountSchema } },
-      },
-    },
-  })
-  async delete(
-    @param.path.number('id') id: number,
-    @param.query.object('where', getWhereSchemaFor(ServiceSegment)) where?: Where<ServiceSegment>,
-  ): Promise<Count> {
-    return await this.serviceRepository.serviceSegments(id).delete(where);
-  }
+  // @del('/services/{id}/service-segments', {
+  //   responses: {
+  //     '200': {
+  //       description: 'Service.ServiceSegment DELETE success count',
+  //       content: { 'application/json': { schema: CountSchema } },
+  //     },
+  //   },
+  // })
+  // async delete(
+  //   @param.path.number('id') id: number,
+  //   @param.query.object('where', getWhereSchemaFor(ServiceSegment)) where?: Where<ServiceSegment>,
+  // ): Promise<Count> {
+  //   return await this.serviceRepository.serviceSegments(id).delete(where);
+  // }
 }

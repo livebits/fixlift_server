@@ -1,11 +1,12 @@
-import { DefaultCrudRepository, repository, BelongsToAccessor, HasManyRepositoryFactory} from '@loopback/repository';
-import { Damage, DamageRelations, Deal, DamageChecklist, DamageSegment, DamageFactor} from '../models';
+import { DefaultCrudRepository, repository, BelongsToAccessor, HasManyRepositoryFactory } from '@loopback/repository';
+import { Damage, DamageRelations, Deal, DamageChecklist, DamageSegment, DamageFactor, ServiceUser } from '../models';
 import { DbDataSource } from '../datasources';
 import { inject, Getter } from '@loopback/core';
 import { DealRepository } from './deal.repository';
-import {DamageChecklistRepository} from './damage-checklist.repository';
-import {DamageSegmentRepository} from './damage-segment.repository';
-import {DamageFactorRepository} from './damage-factor.repository';
+import { DamageChecklistRepository } from './damage-checklist.repository';
+import { DamageSegmentRepository } from './damage-segment.repository';
+import { DamageFactorRepository } from './damage-factor.repository';
+import { ServiceUserRepository } from './service-user.repository';
 
 export class DamageRepository extends DefaultCrudRepository<
   Damage,
@@ -14,6 +15,7 @@ export class DamageRepository extends DefaultCrudRepository<
   > {
 
   public readonly deal: BelongsToAccessor<Deal, typeof Damage.prototype.id>;
+  public readonly serviceUser: BelongsToAccessor<ServiceUser, typeof Damage.prototype.id>;
 
   public readonly damageChecklists: HasManyRepositoryFactory<DamageChecklist, typeof Damage.prototype.id>;
 
@@ -22,13 +24,19 @@ export class DamageRepository extends DefaultCrudRepository<
   public readonly damageFactors: HasManyRepositoryFactory<DamageFactor, typeof Damage.prototype.id>;
 
   constructor(
-    @inject('datasources.db') dataSource: DbDataSource, @repository.getter('DealRepository') protected dealRepositoryGetter: Getter<DealRepository>, @repository.getter('DamageChecklistRepository') protected damageChecklistRepositoryGetter: Getter<DamageChecklistRepository>, @repository.getter('DamageSegmentRepository') protected damageSegmentRepositoryGetter: Getter<DamageSegmentRepository>, @repository.getter('DamageFactorRepository') protected damageFactorRepositoryGetter: Getter<DamageFactorRepository>,
+    @inject('datasources.db') dataSource: DbDataSource,
+    @repository.getter('DealRepository') protected dealRepositoryGetter: Getter<DealRepository>,
+    @repository.getter('DamageChecklistRepository') protected damageChecklistRepositoryGetter: Getter<DamageChecklistRepository>,
+    @repository.getter('DamageSegmentRepository') protected damageSegmentRepositoryGetter: Getter<DamageSegmentRepository>,
+    @repository.getter('DamageFactorRepository') protected damageFactorRepositoryGetter: Getter<DamageFactorRepository>,
+    @repository.getter('ServiceUserRepository') protected serviceUserRepositoryGetter: Getter<ServiceUserRepository>
   ) {
     super(Damage, dataSource);
-    this.damageFactors = this.createHasManyRepositoryFactoryFor('damageFactors', damageFactorRepositoryGetter,);
-    this.damageSegments = this.createHasManyRepositoryFactoryFor('damageSegments', damageSegmentRepositoryGetter,);
-    this.damageChecklists = this.createHasManyRepositoryFactoryFor('damageChecklists', damageChecklistRepositoryGetter,);
+    this.damageFactors = this.createHasManyRepositoryFactoryFor('damageFactors', damageFactorRepositoryGetter);
+    this.damageSegments = this.createHasManyRepositoryFactoryFor('damageSegments', damageSegmentRepositoryGetter);
+    this.damageChecklists = this.createHasManyRepositoryFactoryFor('damageChecklists', damageChecklistRepositoryGetter);
     this.deal = this.createBelongsToAccessorFor('deal', dealRepositoryGetter);
+    this.serviceUser = this.createBelongsToAccessorFor('serviceUser', serviceUserRepositoryGetter);
   }
 
   async query(

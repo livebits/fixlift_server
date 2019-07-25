@@ -9,7 +9,7 @@ export class Segment extends Entity {
     id: true,
     generated: true
   })
-  id?: number;
+  id: number;
 
   @property({
     type: 'date',
@@ -67,3 +67,15 @@ export interface SegmentRelations {
 }
 
 export type SegmentWithRelations = Segment & SegmentRelations;
+
+export class CustomSegment extends Segment {
+  @property({
+    type: 'number',
+  })
+  count?: number;
+
+  @property({
+    type: 'string',
+  })
+  status?: string;
+}

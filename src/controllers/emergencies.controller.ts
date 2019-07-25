@@ -18,12 +18,17 @@ import {
   requestBody,
 } from '@loopback/rest';
 import { Emergency } from '../models';
-import { EmergencyRepository } from '../repositories';
+import { EmergencyRepository, DealRepository } from '../repositories';
+import { AuthenticationBindings, UserProfile, authenticate } from '@loopback/authentication';
+import { inject } from '@loopback/core';
+var moment = require('moment');
 
 export class EmergenciesController {
   constructor(
     @repository(EmergencyRepository)
     public emergencyRepository: EmergencyRepository,
+    @repository(DealRepository)
+    public dealRepository: DealRepository,
   ) { }
 
   @post('/emergencies', {
@@ -35,6 +40,7 @@ export class EmergenciesController {
     },
   })
   async create(@requestBody() emergency: Emergency): Promise<Emergency> {
+    emergency.status = "submitted";
     return await this.emergencyRepository.create(emergency);
   }
 
@@ -52,6 +58,7 @@ export class EmergenciesController {
     return await this.emergencyRepository.count(where);
   }
 
+  @authenticate('jwt')
   @get('/emergencies', {
     responses: {
       '200': {
@@ -65,9 +72,105 @@ export class EmergenciesController {
     },
   })
   async find(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
     @param.query.object('filter', getFilterSchemaFor(Emergency)) filter?: Filter<Emergency>,
-  ): Promise<Emergency[]> {
-    return await this.emergencyRepository.find(filter);
+  ): Promise<{ data: Emergency[], total: number }> {
+
+    let now = new Date();
+
+    let dealsIds: (number[]) = [];
+    let deals = await this.dealRepository.find({ where: { companyUserId: Number(currentUser.id) }, fields: { id: true } });
+    deals.forEach(deal => {
+      dealsIds.push(deal.id ? deal.id : 0);
+    });
+
+    let cloneFilter = Object.assign({}, filter);
+    if (filter !== undefined) {
+      if (filter.where !== undefined) {
+
+        let myFilter = {};
+
+        let emgFilter: { search: string, emgType: string, emgTime: string } = <{ search: string, emgType: string, emgTime: string }>filter.where;
+        if (emgFilter.search != null) {
+          myFilter = { ...myFilter, ...{ or: [{ serviceUserReport: { like: emgFilter.search } }] } }
+        }
+
+        if (emgFilter.emgType != null) {
+
+          switch (emgFilter.emgType) {
+            case 'all':
+            case '':
+              myFilter = { ...myFilter }
+              break;
+            case 'undone':
+              myFilter = { ...myFilter, ...{ or: [{ status: { eq: 'undone' } }, { status: { eq: 'submitted' } }, { status: { eq: '' } }, { status: { eq: null } }] } }
+              break
+            case 'done':
+              myFilter = { ...myFilter, ...{ status: { eq: 'done' } } }
+              break;
+            default:
+              break;
+          }
+        }
+
+        if (emgFilter.emgTime != null) {
+
+          switch (emgFilter.emgTime) {
+            case 'all':
+            case '':
+              myFilter = { ...myFilter }
+              break;
+            case 'thisWeek':
+              myFilter = { ...myFilter, ...{ and: [{ time: { lte: moment().endOf('isoWeek') } }, { time: { gte: moment().startOf('isoWeek') } }] } }
+              break;
+            case 'lastWeek':
+              myFilter = { ...myFilter, ...{ and: [{ time: { lte: moment().subtract(1, 'weeks').endOf('isoWeek') } }, { time: { gte: moment().subtract(1, 'weeks').startOf('isoWeek') } }] } }
+              break;
+            case 'thisMonth':
+              myFilter = { ...myFilter, ...{ and: [{ time: { lte: moment().endOf('month') } }, { time: { gte: moment().startOf('month') } }] } }
+              break;
+            case 'lastMonth':
+              myFilter = { ...myFilter, ...{ and: [{ time: { lte: moment().subtract(1, 'months').endOf('month') } }, { time: { gte: moment().subtract(1, 'months').startOf('month') } }] } }
+              break;
+            case 'thisYear':
+              myFilter = { ...myFilter, ...{ and: [{ time: { gte: moment().startOf('year') } }, { time: { lte: moment().endOf('year') } }] } }
+              break;
+            case 'lastYears':
+              myFilter = { ...myFilter, ...{ time: { lte: moment().startOf('year') } } }
+              break;
+
+            default:
+              break;
+          }
+        } else {
+          myFilter = { ...myFilter, ...{ time: { lte: now.toISOString() } } }
+        }
+
+        filter.where = { ...filter.where, ...myFilter }
+
+        filter.where = { and: [{ dealId: { inq: dealsIds } }, filter.where] };
+      } else {
+        filter.where = { and: [{ dealId: { inq: dealsIds } }, { time: { lte: now.toISOString() } }] };
+      }
+    } else {
+      filter = { where: { and: [{ dealId: { inq: dealsIds } }, { time: { lte: now.toISOString() } }] } };
+    }
+
+    let emergencies = await await this.emergencyRepository.find(filter);
+    let total = await this.emergencyRepository.count(filter.where);
+
+    return { data: emergencies, total: total.count }
+
+    // const sql = `SELECT e.id, e.service_user_id as serviceUserId, e.time, e.done_time as donetime, e.start_time AS startTime,
+    // e.finish_time as finishTime, e.service_user_report as serviceUserReport, deals.id as dealId
+    // FROM emergencies e
+    // LEFT JOIN deals ON deals.id = e.deal_id
+    // WHERE deals.company_user_id = ${currentUser.id}
+    // order by e.id desc`;
+
+    // return await this.emergencyRepository.query(sql);
+    // return await this.emergencyRepository.find(filter);
   }
 
   @patch('/emergencies', {

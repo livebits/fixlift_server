@@ -205,4 +205,65 @@ export class CompanyController {
   async deleteById(@param.path.number('id') id: number): Promise<void> {
     await this.companyRepository.deleteById(id);
   }
+
+  @authenticate('jwt')
+  @get('/companies/getDetail', {
+    responses: {
+      '200': {
+        description: 'Company model instance',
+        content: { 'application/json': { schema: { 'x-ts-type': Company } } },
+      },
+    },
+  })
+  async getDetail(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
+  ): Promise<Company> {
+    let companies = await this.companyRepository.find({ where: { userId: Number(currentUser.id) } });
+    return companies[0];
+
+    // const sql = `SELECT u.username, c.*, r.id AS role
+    //   FROM companies c
+    //   LEFT JOIN users u ON u.id = c.user_id
+    //   LEFT JOIN user_roles ur ON ur.user_id = u.id
+    //   LEFT JOIN roles r ON r.id = ur.role_id
+    //   WHERE c.id=${id}`;
+
+    // const r = await this.companyRepository.query(sql, [], [], 0);
+    // return r[0];
+  }
+
+  @authenticate('jwt')
+  @patch('/companies/update', {
+    responses: {
+      '204': {
+        description: 'Company PATCH success',
+      },
+    },
+  })
+  async updateCompany(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
+    @requestBody() company: CompanyWithUser,
+  ): Promise<void> {
+    // await this.companyRepository.updateById(id, company);
+
+    delete company.id;
+    let currentCompany = await this.companyRepository.findOne({ where: { userId: Number(currentUser.id) } });
+
+    if (currentCompany) {
+      //update company info
+      await this.companyRepository.updateById(currentCompany.id, company);
+
+      //update password
+      if (company.password != null && company.password != "") {
+        let password = await this.passwordHasher.hashPassword(company.password);
+
+        let user = new User();
+        user.id = currentCompany.userId;
+        user.password = password;
+        await this.userRepository.updateById(currentCompany.userId, user);
+      }
+    }
+  }
 }

@@ -70,9 +70,9 @@ export class ServiceSegment extends Entity {
   cost?: number;
 
   @property({
-    type: 'boolean',
+    type: 'string',
   })
-  status?: boolean;
+  status?: string;
 
   segment?: Segment;
 

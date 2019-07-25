@@ -23,5 +23,6 @@ export const enum PermissionKey {
   liftFields = "view_liftFields",
   dealPlaceholders = "view_dealPlaceholders",
   messageTemplates = "view_messageTemplates",
-  companyMessageTemplates = "view_companyMessageTemplates"
+  companyMessageTemplates = "view_companyMessageTemplates",
+  companyProfile = "view_companyProfile"
 }
